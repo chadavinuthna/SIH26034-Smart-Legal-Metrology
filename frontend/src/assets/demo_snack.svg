@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="snackBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="snackCard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF1F2"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="600" height="450" fill="url(#snackBg)"/>
+  
+  <!-- Outer Package Box Mockup -->
+  <rect x="50" y="30" width="500" height="390" rx="16" fill="url(#snackCard)" stroke="#FECDD3" stroke-width="4"/>
+  
+  <!-- Header Banner -->
+  <rect x="50" y="30" width="500" height="80" rx="16" fill="#E11D48"/>
+  <text x="300" y="65" font-family="system-ui, sans-serif" font-size="22" font-weight="900" fill="#FFFFFF" text-anchor="middle">XYZ SNACKS</text>
+  <text x="300" y="92" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#FFE4E6" text-anchor="middle">SPICY CRUNCHY BITES</text>
+  
+  <!-- Front Package Declarations -->
+  <g transform="translate(80, 130)">
+    <!-- Net Quantity Badge -->
+    <rect x="0" y="0" width="200" height="50" rx="8" fill="#F8FAFC" stroke="#64748B" stroke-width="2"/>
+    <text x="10" y="20" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#475569">NET QUANTITY</text>
+    <text x="10" y="40" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#0F172A">500 g</text>
+    
+    <!-- MRP Badge -->
+    <rect x="230" y="0" width="210" height="50" rx="8" fill="#FFF1F2" stroke="#E11D48" stroke-width="2"/>
+    <text x="240" y="20" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#9F1239">PRICE</text>
+    <text x="240" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="900" fill="#BE123C">MRP ₹120</text>
+  </g>
+  
+  <!-- Back Label Declarations Section (Missing Required Declarations) -->
+  <rect x="70" y="200" width="460" height="200" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="85" y="222" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#92400E">PACKAGE BACK LABEL PANEL (INCOMPLETE DECLARATIONS)</text>
+  
+  <g font-family="system-ui, sans-serif" font-size="11" fill="#1E293B">
+    <text x="85" y="250"><tspan font-weight="700" fill="#475569">Packed By:</tspan> XYZ Foods &amp; Beverages</text>
+    <text x="85" y="275" font-weight="700" fill="#DC2626">Address: [NOT PRINTED ON PACKAGE LABEL]</text>
+    
+    <text x="85" y="305" font-weight="700" fill="#DC2626">Mfg / Packing Date: [NOT PRINTED ON PACKAGE LABEL]</text>
+    <text x="85" y="330" font-weight="700" fill="#DC2626">Best Before Date: [NOT PRINTED ON PACKAGE LABEL]</text>
+    
+    <text x="85" y="355" font-weight="700" fill="#DC2626">Consumer Care Contact: [NOT PRINTED ON PACKAGE LABEL]</text>
+    <text x="85" y="380" font-weight="700" fill="#D97706">Country of Origin: [NOT EXPLICITLY STATED]</text>
+  </g>
+  
+  <!-- Warning Watermark -->
+  <circle cx="470" cy="350" r="32" fill="#E11D48" opacity="0.12"/>
+  <text x="470" y="354" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#BE123C" text-anchor="middle">NON-COMPLIANT</text>
+</svg>
