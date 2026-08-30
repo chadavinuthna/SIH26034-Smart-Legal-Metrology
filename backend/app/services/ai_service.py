@@ -39,7 +39,14 @@ CRITICAL INSTRUCTIONS:
    - phone: customer care toll-free/telephone number
    - email: contact email
    - address: consumer complaints address/website
-10. Extract Country of Origin (e.g., 'India', 'China', 'USA', or null if not declared).
+10. Extract Country of Origin ONLY if it is explicitly printed on the package.
+   Accept declarations such as:
+   - "Country of Origin: India"
+   - "Made in India"
+   - "Product of India"
+   - "Country of Origin: China"
+   Do NOT infer the country from the manufacturer address, company name, brand name, website, phone number, barcode, or any other indirect information.
+   If there is no explicit country-of-origin declaration visible on the package, return null.
 11. Extract raw_evidence array: For each detected field, include an object:
     {"field": "<field_name>", "value": "<extracted_val>", "evidence": "<exact verbatim quote from package>"}
 

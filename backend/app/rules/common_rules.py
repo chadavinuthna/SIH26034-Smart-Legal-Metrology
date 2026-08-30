@@ -83,87 +83,146 @@ def check_lm_001_manufacturer(product: ProductData) -> RuleResult:
 
 def check_lm_002_country_of_origin(product: ProductData) -> RuleResult:
     """LM-002: Country of Origin Declaration.
-    Requirement:
-    - Clearly imported + country detected -> PASS
-    - Clearly imported + country missing -> FAIL
-    - Import status clearly not applicable (explicit domestic origin / domestic product) -> NA
-    - Import status uncertain -> REVIEW
+
+    Decision logic:
+    1. Explicit country declaration -> PASS.
+    2. Explicit imported/importer wording + no country -> FAIL.
+    3. Clearly domestic manufacturer with Indian address -> NA.
+    4. Otherwise -> REVIEW.
+
+    Important:
+    Do not assume a product is imported merely because country_of_origin
+    is missing.
     """
     country = product.country_of_origin
     evidence = _get_evidence(product, "country_of_origin")
 
     mfg = product.manufacturer
-    mfg_role = (mfg.role or "").lower() if mfg else ""
-    mfg_addr = (mfg.address or "").lower() if mfg else ""
-    
-    # Clues indicating imported commodity
-    is_imported_role = any(term in mfg_role for term in ["import", "imported by", "importer"])
-    has_foreign_country = bool(country and country.strip().lower() not in ["india", "ind", "bharat", "domestic"])
+    mfg_role = (mfg.role or "").strip().lower() if mfg else ""
+    mfg_name = (mfg.name or "").strip() if mfg else ""
+    mfg_addr = (mfg.address or "").strip().lower() if mfg else ""
 
-    is_clearly_imported = is_imported_role or has_foreign_country
+    # ---------------------------------------------------------
+    # 1. Explicit country of origin detected
+    # ---------------------------------------------------------
+    if country and country.strip():
+        country_value = country.strip()
 
-    if is_clearly_imported:
-        if country and country.strip():
-            return RuleResult(
-                rule_id="LM-002",
-                rule_name="Country of Origin",
-                field="country_of_origin",
-                status=ComplianceStatus.PASS,
-                detected_value=f"Imported from {country.strip()}",
-                evidence=evidence if evidence != "Evidence not available." else f"Country: {country}",
-                reason="Requirement appears satisfied based on available evidence. Imported commodity has country of origin declared.",
-                recommendation=None
-            )
-        else:
-            return RuleResult(
-                rule_id="LM-002",
-                rule_name="Country of Origin",
-                field="country_of_origin",
-                status=ComplianceStatus.FAIL,
-                detected_value=None,
-                evidence="Evidence not available.",
-                reason="Required information appears missing. Package indicates imported commodity but country of origin declaration is missing.",
-                recommendation="Declare 'Country of Origin: [Country Name]' conspicuously on imported packaged commodities."
-            )
-    else:
-        # Check if country of origin is explicitly declared as India (domestic declaration)
-        if country and country.strip().lower() in ["india", "ind", "bharat"]:
-            return RuleResult(
-                rule_id="LM-002",
-                rule_name="Country of Origin",
-                field="country_of_origin",
-                status=ComplianceStatus.PASS,
-                detected_value=country.strip(),
-                evidence=evidence if evidence != "Evidence not available." else f"Origin: {country}",
-                reason="Requirement appears satisfied based on available evidence ('Made in India' / Origin declared).",
-                recommendation=None
-            )
-        # Check if clearly domestic manufacturer with Indian address
-        elif mfg_addr and ("india" in mfg_addr or re.search(r'\b\d{6}\b', mfg_addr)):
-            return RuleResult(
-                rule_id="LM-002",
-                rule_name="Country of Origin",
-                field="country_of_origin",
-                status=ComplianceStatus.NA,
-                detected_value="Domestic Manufacturer Identified",
-                evidence=mfg.address if mfg else "Evidence not available.",
-                reason="The rule does not apply as a separate mandatory import origin requirement for purely domestic manufacturing.",
-                recommendation="Optional best practice: Declare 'Made in India' / 'Country of Origin: India'."
-            )
-        else:
-            # Uncertain import status
-            return RuleResult(
-                rule_id="LM-002",
-                rule_name="Country of Origin",
-                field="country_of_origin",
-                status=ComplianceStatus.REVIEW,
-                detected_value=None,
-                evidence="Evidence not available.",
-                reason="The system cannot confidently determine compliance. Import status or domestic origin could not be definitively established.",
-                recommendation="Verify whether the package is an imported commodity requiring mandatory country-of-origin declaration."
-            )
+        return RuleResult(
+            rule_id="LM-002",
+            rule_name="Country of Origin",
+            field="country_of_origin",
+            status=ComplianceStatus.PASS,
+            detected_value=country_value,
+            evidence=(
+                evidence
+                if evidence != "Evidence not available."
+                else f"Country of Origin: {country_value}"
+            ),
+            reason=(
+                "Country of origin is explicitly declared on the package."
+            ),
+            recommendation=None
+        )
 
+    # ---------------------------------------------------------
+    # 2. Explicit importer / imported wording detected
+    # ---------------------------------------------------------
+    imported_terms = [
+        "imported by",
+        "importer",
+        "imported",
+        "imported and marketed by",
+        "imported & marketed by",
+    ]
 
+    explicitly_imported = any(
+        term in mfg_role for term in imported_terms
+    )
+
+    if explicitly_imported:
+        return RuleResult(
+            rule_id="LM-002",
+            rule_name="Country of Origin",
+            field="country_of_origin",
+            status=ComplianceStatus.FAIL,
+            detected_value=None,
+            evidence=(
+                evidence
+                if evidence != "Evidence not available."
+                else (
+                    f"Importer information detected: "
+                    f"{mfg_name or 'Importer identified'}"
+                )
+            ),
+            reason=(
+                "The package indicates an imported commodity, but the "
+                "country of origin declaration was not detected."
+            ),
+            recommendation=(
+                "Declare the country of origin clearly on the package, "
+                "for example: 'Country of Origin: [Country Name]'."
+            )
+        )
+
+    # ---------------------------------------------------------
+    # 3. Clearly domestic manufacturer
+    # ---------------------------------------------------------
+    indian_address = (
+        "india" in mfg_addr
+        or bool(re.search(r"\b\d{6}\b", mfg_addr))
+    )
+
+    domestic_role = any(
+        term in mfg_role
+        for term in [
+            "manufactured by",
+            "manufactured & marketed by",
+            "manufactured and marketed by",
+            "packed by",
+            "made by",
+        ]
+    )
+
+    if mfg_name and indian_address and domestic_role:
+        return RuleResult(
+            rule_id="LM-002",
+            rule_name="Country of Origin",
+            field="country_of_origin",
+            status=ComplianceStatus.NA,
+            detected_value="Domestic Manufacturer Identified",
+            evidence=(
+                evidence
+                if evidence != "Evidence not available."
+                else f"{mfg_name}, {mfg.address}"
+            ),
+            reason=(
+                "The package identifies a domestic manufacturer/packer "
+                "with an Indian address. A separate imported-commodity "
+                "country-of-origin declaration is therefore not applicable."
+            ),
+            recommendation=None
+        )
+
+    # ---------------------------------------------------------
+    # 4. Cannot establish import or domestic status
+    # ---------------------------------------------------------
+    return RuleResult(
+        rule_id="LM-002",
+        rule_name="Country of Origin",
+        field="country_of_origin",
+        status=ComplianceStatus.REVIEW,
+        detected_value=None,
+        evidence="Evidence not available.",
+        reason=(
+            "The visible/extracted label information does not establish "
+            "whether the commodity is imported or domestically manufactured."
+        ),
+        recommendation=(
+            "Inspect the package for 'Imported by', 'Country of Origin', "
+            "'Made in India', or domestic manufacturer details."
+        )
+    )
 def check_lm_003_generic_name(product: ProductData) -> RuleResult:
     """LM-003: Generic / Common Product Name.
     Requirement: Generic or common name of the commodity must be declared distinctly on the principal display panel.
