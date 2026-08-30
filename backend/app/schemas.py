@@ -1,7 +1,7 @@
 """Pydantic data schemas for Legal Metrology Package Compliance System."""
 from typing import Optional, List, Dict, Any
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ComplianceStatus(str, Enum):
@@ -89,8 +89,7 @@ class InspectionSummary(BaseModel):
     review_count: int = Field(alias="review", default=0)
     na_count: int = Field(alias="na", default=0)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ImageQualityInfo(BaseModel):
