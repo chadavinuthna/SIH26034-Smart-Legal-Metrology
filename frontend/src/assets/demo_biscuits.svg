@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="600" height="450" fill="url(#goldBg)"/>
+  
+  <!-- Outer Package Mockup Box -->
+  <rect x="50" y="30" width="500" height="390" rx="16" fill="url(#cardGrad)" stroke="#CBD5E1" stroke-width="4"/>
+  
+  <!-- Header Banner -->
+  <rect x="50" y="30" width="500" height="80" rx="16" fill="#D97706"/>
+  <text x="300" y="65" font-family="system-ui, sans-serif" font-size="22" font-weight="900" fill="#FFFFFF" text-anchor="middle">GOLDEN HARVEST</text>
+  <text x="300" y="92" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#FEF3C7" text-anchor="middle">CRUNCHY BUTTER BISCUITS</text>
+  
+  <!-- Front Package Key Declarations -->
+  <g transform="translate(80, 130)">
+    <!-- Net Quantity Badge -->
+    <rect x="0" y="0" width="200" height="50" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+    <text x="10" y="20" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1E40AF">NET QUANTITY</text>
+    <text x="10" y="40" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#1E3A8A">200 g</text>
+    
+    <!-- MRP Badge -->
+    <rect x="230" y="0" width="210" height="50" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+    <text x="240" y="20" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#065F46">MAXIMUM RETAIL PRICE</text>
+    <text x="240" y="40" font-family="system-ui, sans-serif" font-size="15" font-weight="900" fill="#047857">₹ 80.00 (Incl. of all taxes)</text>
+  </g>
+  
+  <!-- Back Label Declarations Section -->
+  <rect x="70" y="200" width="460" height="200" rx="12" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="85" y="222" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#334155">MANDATORY LEGAL METROLOGY DECLARATION PANEL</text>
+  
+  <g font-family="system-ui, sans-serif" font-size="11" fill="#1E293B">
+    <text x="85" y="248"><tspan font-weight="700" fill="#475569">Generic Commodity Name:</tspan> Biscuits</text>
+    <text x="85" y="270"><tspan font-weight="700" fill="#475569">Manufactured By:</tspan> ABC Foods Pvt Ltd</text>
+    <text x="85" y="290"><tspan font-weight="700" fill="#475569">Factory Address:</tspan> Plot No. 42, Industrial Area, Uppal, Hyderabad - 500039</text>
+    
+    <text x="85" y="315"><tspan font-weight="700" fill="#475569">Mfg &amp; Pkd Date:</tspan> 07/2026</text>
+    <text x="270" y="315"><tspan font-weight="700" fill="#475569">Best Before:</tspan> 6 Months from Mfg</text>
+    
+    <text x="85" y="340"><tspan font-weight="700" fill="#475569">Consumer Care Helpline:</tspan> 1800-123-4567 | care@abcfoods.com</text>
+    <text x="85" y="365"><tspan font-weight="700" fill="#475569">Country of Origin:</tspan> India (Domestic Manufactured)</text>
+  </g>
+  
+  <!-- Stamp Seal -->
+  <circle cx="480" cy="350" r="30" fill="#1E3A8A" opacity="0.15"/>
+  <text x="480" y="354" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#1E3A8A" text-anchor="middle">VERIFIED</text>
+</svg>
