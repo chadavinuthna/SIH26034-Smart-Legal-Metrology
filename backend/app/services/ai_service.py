@@ -17,6 +17,50 @@ CRITICAL INSTRUCTIONS:
 2. NEVER invent, extrapolate, or hallucinate missing information.
 3. If a field or detail is not clearly visible or absent, return null (None).
 4. Distinguish carefully between Brand Name (trade name) and Generic Product Name (commodity category e.g., 'Biscuits', 'Atta', 'Soap', 'Edible Oil').
+4A. For generic_name, extract ONLY the actual generic commodity/product type printed on the package.
+    Examples: "Biscuits", "Atta", "Soap", "Shampoo", "Edible Oil".
+    Do NOT use slogans, advertisements, descriptions, claims, or marketing sentences.
+    For example, if the package says "Patanjali Doodh Biscuits are Easy to Digest",
+    the generic_name should be "Biscuits", not "Patanjali Doodh Biscuits are Easy to Digest".
+
+4B. For product_name, extract the actual product name only.
+    Do NOT include slogans, advertising claims, or descriptive sentences.
+
+4C. For raw_evidence, the "evidence" value MUST be an exact verbatim quote
+    from the visible package image that directly supports that field.
+    Do NOT paraphrase, reconstruct, shorten incorrectly, or combine unrelated text.
+
+4D. The raw_evidence for product_name and generic_name must directly support the
+    corresponding extracted value. Do not use a marketing sentence merely because
+    it contains the product name.
+
+4E. Before producing the final JSON, verify every raw_evidence entry against the
+    actual visible text in the image. If exact supporting text is not visible,
+    do not create evidence for that field.
+
+4F. Never guess missing information. If the exact information cannot be read,
+    return null.
+4G. raw_evidence must use the SMALLEST exact visible text span that directly proves
+the extracted field.
+
+4H. Do NOT reuse one long sentence as evidence for multiple fields when smaller
+exact text is visible.
+
+4I. For example, if the image visibly contains:
+"Patanjali Doodh Biscuits are Easy to Digest"
+then:
+- brand_name value "Patanjali" should use evidence "Patanjali"
+- product_name value "Doodh Biscuits" should use evidence "Doodh Biscuits"
+- generic_name value "Biscuits" should use evidence "Biscuits"
+
+4J. Evidence may be a substring of a larger printed sentence, but it must be copied
+EXACTLY from the image and must directly support the field.
+
+4K. Never use the same evidence sentence for brand_name, product_name, and
+generic_name when the individual words or phrases are visibly identifiable.
+
+4L. Before returning JSON, check that every raw_evidence item's evidence contains
+the exact extracted value or is an exact directly-supporting label phrase.
 5. Extract Manufacturer / Packer / Importer information:
    - role: 'Manufactured by' / 'Packed by' / 'Imported by' / etc.
    - name: Company or firm name
@@ -50,6 +94,81 @@ CRITICAL INSTRUCTIONS:
 11. Extract raw_evidence array: For each detected field, include an object:
     {"field": "<field_name>", "value": "<extracted_val>", "evidence": "<exact verbatim quote from package>"}
 
+12. Perform a complete visual scan of the ENTIRE package image before producing JSON.
+
+13. Inspect every visible area of the package, including front, back, side, top, bottom, corners, and small-print areas.
+
+14. Manufacturer, packer, importer, and marketer information may appear in very small text. Search the ENTIRE package image carefully, including the bottom, back, side panels, corners, and all small-print areas.
+
+    Search specifically for these declarations:
+    "Manufactured by"
+    "Manufactured & Packed by"
+    "Manufactured and Packed by"
+    "Mfd. by"
+    "Mfg. by"
+    "Packed by"
+    "Pkd. by"
+    "Imported by"
+    "Importer"
+    "Marketed by"
+    "Manufactured for"
+
+    If any of these declarations are clearly visible, extract the corresponding company/firm name and complete visible address.
+
+    Do NOT return manufacturer.name as null when a manufacturer/packer/importer declaration and its company name are clearly visible anywhere in the image.
+
+    Do NOT treat "FOR CONSUMER CARE CONTACT" or "CONSUMER CARE" as manufacturer information unless the same text explicitly identifies the manufacturer, packer, or importer.
+
+    Do NOT infer the manufacturer from the brand name. The manufacturer relationship must be explicitly visible on the package.
+
+15. Do not assume a field is missing merely because it is not near the product name or MRP.
+
+16. Search the entire image specifically for:
+    MRP, Net Weight, Net Qty, Net Quantity, Manufactured, Packed,
+    Imported, Marketed, Batch, Lot, PKD, MFD, Best Before,
+    Use By, Expiry, Customer Care, Consumer Care, Helpline,
+    Email, Address, Made in, Country of Origin.
+
+16A. IMPORTANT: Manufacturer information must be extracted whenever ANY visible manufacturer/packer/importer declaration is present. Do not return manufacturer as null if the image visibly contains a company name associated with "Manufactured by", "Mfd. by", "Manufactured & Packed by", "Packed by", "Pkd. by", "Imported by", or "Importer".
+
+16B. When reading manufacturer information, inspect the entire image at high attention, especially the bottom, back, side panels, and small-print text. Manufacturer information may be much smaller than the product name.
+
+16C. If a declaration such as "Manufactured by [COMPANY NAME]" is visible, extract:
+    role = "Manufactured by"
+    name = "[COMPANY NAME]"
+    address = the complete address visible after the company name.
+
+16D. Do not use consumer-care text as manufacturer information. "FOR CONSUMER CARE CONTACT" is a consumer-care declaration unless the same text explicitly identifies the manufacturer/packer/importer.
+
+16E. Do not infer manufacturer information from the brand name alone. Only extract it when the company/manufacturer relationship is visibly declared.
+16F. IMPORTANT: If none of the manufacturer/packer/importer/marketer declarations listed above are visibly present in the image, manufacturer.role, manufacturer.name, and manufacturer.address MUST remain null. Do not infer or guess the manufacturer from the brand name, logo, barcode, consumer-care text, registered-office wording, or any other indirect information.
+
+17. Distinguish carefully between:
+    - manufacture date
+    - packing date
+    - best-before duration
+    - use-by/expiry date
+
+18. Distinguish manufacturer/packer/importer information from marketer information.
+
+19. For every detected field, include the exact visible wording in raw_evidence.
+
+20. Do not reconstruct text that is not visible or readable.
+
+21. If a field is genuinely not visible, return null.
+
+22. Never mark a field as present simply because the field would normally be legally required.
+
+23. Before returning the final JSON, perform a second visual pass specifically looking for:
+    manufacturer, packer, importer, consumer care, dates, MRP,
+    quantity, and country-of-origin declarations.
+24. Evidence must come only from text that is actually visible and readable in the supplied image. Do not create a manufacturer, company name, address, phone number, email, or country of origin that is not visibly printed on the package.
+
+25. If the image shows only "FOR CONSUMER CARE CONTACT", "ADDRESS AS PER REGD. OFFICE", or similar consumer-care wording without explicitly naming a manufacturer/packer/importer, keep manufacturer fields null.
+
+26. For manufacturer extraction, the declaration and company relationship must be visible together. For example, "Manufactured by ABC Foods" is valid evidence. A standalone company name or brand name is NOT sufficient evidence.
+
+27. If text is too small, blurry, cropped, folded, hidden, or unreadable, return null rather than reconstructing or guessing the text.
 Output ONLY valid JSON matching this exact structure:
 {
   "product_name": null,

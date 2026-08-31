@@ -2411,5 +2411,2795 @@
     },
     "created_at": "2026-08-30T23:38:57.385722",
     "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-82FB1",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Patanjali Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Doodh Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "product_name",
+          "value": "Patanjali Doodh Biscuits",
+          "evidence": "Patanjali Doodh Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care_address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Doodh Biscuits",
+        "evidence": "Doodh Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Doodh Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T22:12:37.547571",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-E1C2E",
+    "status": "NON_COMPLIANT",
+    "score": 72,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": "BRITANNIA",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "60",
+        "unit": "g",
+        "raw_text": "53g + 7g Extra* = 60g"
+      },
+      "mrp": {
+        "value": "10.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP. ₹ (incl., of all taxes) 10.00"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "25/12/18",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "BRITANNIA",
+          "evidence": "BRITANNIA"
+        },
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS NET WEIGHT"
+        },
+        {
+          "field": "quantity",
+          "value": "60g",
+          "evidence": "53g + 7g Extra* = 60g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP. ₹ (incl., of all taxes) 10.00"
+        },
+        {
+          "field": "packing_date",
+          "value": "25/12/18",
+          "evidence": "PKD. 25/12/18"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS NET WEIGHT",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "60 g",
+        "evidence": "53g + 7g Extra* = 60g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '60 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 25/12/18",
+        "evidence": "PKD. 25/12/18",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '25/12/18' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.0",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP. ₹ (incl., of all taxes) 10.00",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 6,
+      "fail_count": 2,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "file_size_kb": 106.22,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T22:14:26.019203",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-369CF",
+    "status": "NON_COMPLIANT",
+    "score": 61,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": null,
+      "generic_name": null,
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "54.4",
+        "unit": "g",
+        "raw_text": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* = 54.4 g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP Rs. 10.00 incl. of all taxes (Rs. 0.21 per g)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "26/07/26",
+        "best_before": null,
+        "use_by": "21/01/27"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "quantity",
+          "value": "54.4 g",
+          "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* = 54.4 g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP Rs. 10.00 incl. of all taxes (Rs. 0.21 per g)"
+        },
+        {
+          "field": "packing_date",
+          "value": "26/07/26",
+          "evidence": "PKD.: 26/07/26"
+        },
+        {
+          "field": "use_by",
+          "value": "21/01/27",
+          "evidence": "USE BY: 21/01/27"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. Generic or common commodity name not detected.",
+        "recommendation": "Print the generic name of the commodity in clear font size on the principal display panel."
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "54.4 g",
+        "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* = 54.4 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '54.4 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 26/07/26",
+        "evidence": "PKD.: 26/07/26",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '26/07/26' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Use By: 21/01/27",
+        "evidence": "USE BY: 21/01/27",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes (Rs. 0.21 per g)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP Rs. 10.00 incl. of all taxes (Rs. 0.21 per g)",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes (Rs. 0.21 per g)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 5,
+      "fail_count": 3,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1920,
+      "height": 1080,
+      "format": "JPEG",
+      "file_size_kb": 287.72,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-08-31T23:22:03.241527",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-27AB3",
+    "status": "NON_COMPLIANT",
+    "score": 72,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": null,
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "54.4",
+        "unit": "g",
+        "raw_text": "47.6 g + 6.8 g EXTRA* = 54.4 g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP Rs. 10.00 incl. of all taxes"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "26/07/26",
+        "best_before": null,
+        "use_by": "21/01/27"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "quantity",
+          "value": "54.4 g",
+          "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* = 54.4 g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP Rs. 10.00 incl. of all taxes"
+        },
+        {
+          "field": "packing_date",
+          "value": "26/07/26",
+          "evidence": "PKD. 26/07/26"
+        },
+        {
+          "field": "use_by",
+          "value": "21/01/27",
+          "evidence": "USE BY: 21/01/27"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "54.4 g",
+        "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* = 54.4 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '54.4 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 26/07/26",
+        "evidence": "PKD. 26/07/26",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '26/07/26' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Use By: 21/01/27",
+        "evidence": "USE BY: 21/01/27",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP Rs. 10.00 incl. of all taxes",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 6,
+      "fail_count": 2,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1920,
+      "height": 1080,
+      "format": "JPEG",
+      "file_size_kb": 296.22,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-08-31T23:23:31.501555",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-B166D",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Patanjali Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Doodh Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "product_name",
+          "value": "Patanjali Doodh Biscuits",
+          "evidence": "Patanjali Doodh Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care_address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER-MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Doodh Biscuits",
+        "evidence": "Doodh Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Doodh Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.0",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T23:24:07.752670",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-07517",
+    "status": "NON_COMPLIANT",
+    "score": 72,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": "BRITANNIA",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "60",
+        "unit": "g",
+        "raw_text": "53g+7g Extra* = 60g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP. ₹ 10.00 (incl., of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "25/12/18",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS NET WEIGHT"
+        },
+        {
+          "field": "brand_name",
+          "value": "BRITANNIA",
+          "evidence": "BRITANNIA"
+        },
+        {
+          "field": "quantity",
+          "value": "60g",
+          "evidence": "NET WEIGHT 53g+7g Extra* = 60g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP. ₹ 10.00 (incl., of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "25/12/18",
+          "evidence": "PKD. 25/12/18"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS NET WEIGHT",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "60 g",
+        "evidence": "NET WEIGHT 53g+7g Extra* = 60g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '60 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 25/12/18",
+        "evidence": "PKD. 25/12/18",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '25/12/18' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP. ₹ 10.00 (incl., of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP. ₹ 10.00 (incl., of all taxes)",
+        "evidence": "MRP. ₹ 10.00 (incl., of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 6,
+      "fail_count": 2,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "file_size_kb": 106.22,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T23:24:38.783332",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-2CCB9",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Patanjali Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Doodh Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "product_name",
+          "value": "Patanjali Doodh Biscuits",
+          "evidence": "Patanjali Doodh Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD. / USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD. / USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care_address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER-MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Doodh Biscuits",
+        "evidence": "Doodh Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Doodh Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD. / USE BY DATE: 30.07.22 / 29.01.23",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T23:50:31.575530",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-187B2",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Patanjali Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "product_name",
+          "value": "Patanjali Doodh Biscuits",
+          "evidence": "Patanjali Doodh Biscuits are Easy to Digest"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care_address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER-MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-08-31T23:55:39.084139",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-B42F5",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹: 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali Doodh Biscuits are Easy to Digest"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Patanjali Doodh Biscuits are Easy to Digest"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Patanjali Doodh Biscuits are Easy to Digest"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹: 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Patanjali Doodh Biscuits are Easy to Digest",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹: 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹: 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹: 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:00:23.550158",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-8CFA1",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.0",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:02:41.174837",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-12434",
+    "status": "COMPLIANT",
+    "score": 100,
+    "category": "Food",
+    "product": {
+      "product_name": "Royal Butter Delight Biscuits",
+      "brand_name": "Royal Treats",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured by",
+        "name": "ABC Foods & Confectioneries Pvt Ltd",
+        "address": "Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Wt. 200 g (7.05 oz)"
+      },
+      "mrp": {
+        "value": "80.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹80.00 (Inclusive of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "07/2026",
+        "packing_date": "07/2026",
+        "best_before": "6 months from manufacture",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "care@abcfoods.example.in",
+        "address": "Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076"
+      },
+      "country_of_origin": "India",
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "manufacturer",
+          "value": "ABC Foods & Confectioneries Pvt Ltd",
+          "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Butter Delight Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Wt. 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "₹80.00",
+          "evidence": "MRP ₹80.00 (Inclusive of all taxes)"
+        },
+        {
+          "field": "manufacture_date",
+          "value": "07/2026",
+          "evidence": "Mfg. Date: 07/2026"
+        },
+        {
+          "field": "best_before",
+          "value": "6 months",
+          "evidence": "Best before 6 months from packaging"
+        },
+        {
+          "field": "consumer_care",
+          "value": "1800-123-4567",
+          "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in"
+        },
+        {
+          "field": "country_of_origin",
+          "value": "India",
+          "evidence": "Made in India"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured by] ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "reason": "Requirement appears satisfied based on available evidence (entity name and address verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "PASS",
+        "detected_value": "India",
+        "evidence": "Made in India",
+        "reason": "Country of origin is explicitly declared on the package.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Butter Delight Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Wt. 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 07/2026",
+        "evidence": "Mfg. Date: 07/2026",
+        "reason": "Requirement appears satisfied based on available evidence (Manufacture date '07/2026' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: 6 months from manufacture",
+        "evidence": "Best before 6 months from packaging",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹80.00",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹80.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹80.00 (Inclusive of all taxes)",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: care@abcfoods.example.in | Addr: Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076",
+        "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in",
+        "reason": "Requirement appears satisfied based on available evidence (3 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 9,
+      "fail_count": 0,
+      "review_count": 0,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:08:34.853852",
+    "is_demo": true
+  },
+  {
+    "inspection_id": "LM-2026-08C44",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE:\n30.07.22/29.01.23"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD./ USE BY DATE:\n30.07.22/29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER-MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE:\n30.07.22/29.01.23",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.0",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:25:32.108866",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-50E26",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.0",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:30:54.463932",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-1FB73",
+    "status": "NON_COMPLIANT",
+    "score": 72,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": "BRITANNIA",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "60",
+        "unit": "g",
+        "raw_text": "53g + 7g Extra* = 60g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP. ₹ (incl., of all taxes) 10.00"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "25/12/18",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "BRITANNIA",
+          "evidence": "BRITANNIA"
+        },
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "quantity",
+          "value": "60 g",
+          "evidence": "53g + 7g Extra* = 60g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP. ₹ (incl., of all taxes) 10.00"
+        },
+        {
+          "field": "packing_date",
+          "value": "25/12/18",
+          "evidence": "PKD. 25/12/18"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "60 g",
+        "evidence": "53g + 7g Extra* = 60g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '60 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 25/12/18",
+        "evidence": "PKD. 25/12/18",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '25/12/18' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP. ₹ (incl., of all taxes) 10.00",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 6,
+      "fail_count": 2,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "file_size_kb": 106.22,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:32:41.939858",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-28674",
+    "status": "NON_COMPLIANT",
+    "score": 72,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": "BRITANNIA",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "60",
+        "unit": "g",
+        "raw_text": "53g+7g Extra* = 60g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP. ₹ (incl., of all taxes) 10.00"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "25/12/18",
+        "best_before": "SIX MONTHS FROM PACKAG",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "BRITANNIA",
+          "evidence": "BRITANNIA"
+        },
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "quantity",
+          "value": "60 g",
+          "evidence": "53g+7g Extra* = 60g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP. ₹ (incl., of all taxes) 10.00"
+        },
+        {
+          "field": "packing_date",
+          "value": "25/12/18",
+          "evidence": "PKD. 25/12/18"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAG",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "60 g",
+        "evidence": "53g+7g Extra* = 60g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '60 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 25/12/18",
+        "evidence": "PKD. 25/12/18",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '25/12/18' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAG",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAG",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP. ₹ (incl., of all taxes) 10.00",
+        "evidence": "MRP. ₹ (incl., of all taxes) 10.00",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No consumer grievance redressal phone, email, or address detected.",
+        "recommendation": "Mandatory consumer care helpline number, email, and address must be printed on package."
+      }
+    ],
+    "summary": {
+      "pass_count": 6,
+      "fail_count": 2,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "file_size_kb": 106.22,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-01T00:34:37.695391",
+    "is_demo": false
   }
 ]

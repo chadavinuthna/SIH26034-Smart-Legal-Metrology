@@ -19,14 +19,17 @@ export default function NewInspection({
   systemConfig,
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [category, setCategory] = useState('Auto Detect');
-  const [activeDemoSample, setActiveDemoSample] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
+const [imagePreview, setImagePreview] = useState(null);
+const [category, setCategory] = useState('Auto Detect');
+const [activeDemoSample, setActiveDemoSample] = useState(null);
+const [isDragging, setIsDragging] = useState(false);
+const [errorMsg, setErrorMsg] = useState(null);
+const [isCameraOpen, setIsCameraOpen] = useState(false);
+const [cameraStream, setCameraStream] = useState(null);
 
-  const fileInputRef = useRef(null);
-
+const fileInputRef = useRef(null);
+const videoRef = useRef(null);
+const canvasRef = useRef(null);
   const categories = [
     'Auto Detect',
     'Food',
@@ -87,15 +90,126 @@ export default function NewInspection({
     setCategory(demoProd.category);
     setErrorMsg(null);
   };
+ const openCamera = async () => {
+  try {
+    setErrorMsg(null);
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
-    setActiveDemoSample(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setErrorMsg('Camera access is not supported by this browser.');
+      return;
+    }
 
-  const handleSubmit = () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
+      audio: false,
+    });
+
+    setCameraStream(stream);
+    setIsCameraOpen(true);
+
+    // Wait until the video element exists
+    setTimeout(async () => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        try {
+          await videoRef.current.play();
+        } catch (error) {
+          console.error('Video play error:', error);
+        }
+      }
+    }, 100);
+  } catch (error) {
+    console.error('Camera error:', error);
+
+    if (error.name === 'NotAllowedError') {
+      setErrorMsg('Camera permission was denied. Please allow camera access.');
+    } else if (error.name === 'NotFoundError') {
+      setErrorMsg('No camera was found on this device.');
+    } else {
+      setErrorMsg('Unable to open the camera.');
+    }
+  }
+};
+
+const closeCamera = () => {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop());
+  }
+
+  setCameraStream(null);
+  setIsCameraOpen(false);
+};
+
+const capturePhoto = () => {
+  const video = videoRef.current;
+  const canvas = canvasRef.current;
+
+  if (!video || !canvas) {
+    setErrorMsg('Camera is not ready. Please try again.');
+    return;
+  }
+
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+
+  if (!width || !height) {
+    setErrorMsg('Camera image is not ready. Please wait a moment and try again.');
+    return;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    setErrorMsg('Unable to prepare photo capture.');
+    return;
+  }
+
+  context.drawImage(video, 0, 0, width, height);
+
+  try {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setErrorMsg('Unable to capture photo. Please try again.');
+          return;
+        }
+
+        const file = new File(
+          [blob],
+          `camera-package-${Date.now()}.jpg`,
+          { type: 'image/jpeg' }
+        );
+
+        closeCamera();
+        handleFileChange(file);
+      },
+      'image/jpeg',
+      0.92
+    );
+  } catch (error) {
+    console.error('Photo capture error:', error);
+    setErrorMsg('Unable to capture photo. Please try again.');
+  }
+};
+
+const handleRemoveImage = () => {
+  setSelectedFile(null);
+  setImagePreview(null);
+  setActiveDemoSample(null);
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+};
+
+const handleSubmit = () => {
     if (!imagePreview) {
       setErrorMsg('Please upload a package image or select a demo sample to proceed.');
       return;
@@ -129,6 +243,42 @@ export default function NewInspection({
 
       {/* Main Upload Card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+        {isCameraOpen && (
+  <div className="bg-slate-950 rounded-2xl p-4 space-y-4">
+    <div className="relative w-full max-w-2xl mx-auto bg-black rounded-xl overflow-hidden">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-auto"
+      />
+
+      <canvas
+        ref={canvasRef}
+        className="hidden"
+      />
+    </div>
+
+    <div className="flex justify-center gap-3">
+      <button
+        type="button"
+        onClick={capturePhoto}
+        className="px-5 py-2.5 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
+      >
+        Capture Photo
+      </button>
+
+      <button
+        type="button"
+        onClick={closeCamera}
+        className="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
         {/* Upload Dropzone / Preview */}
         {!imagePreview ? (
           <div
@@ -160,13 +310,30 @@ export default function NewInspection({
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
               Supports high-resolution JPEG, PNG, or WebP images of packaged commodities.
             </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      fileInputRef.current?.click();
+    }}
+    className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-2xs transition-colors"
+  >
+    Browse Image from Device
+  </button>
 
-            <button
-              type="button"
-              className="mt-4 px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-2xs transition-colors"
-            >
-              Browse Image from Device
-            </button>
+  <button
+    type="button"
+   onClick={(e) => {
+      e.stopPropagation();
+      openCamera();
+    }}
+    className="px-4 py-2 text-xs font-bold text-white bg-blue-800 hover:bg-blue-900 rounded-lg shadow-2xs transition-colors"
+  >
+    📷 Take Photo
+  </button>
+</div>
+
           </div>
         ) : (
           <div className="space-y-4">
