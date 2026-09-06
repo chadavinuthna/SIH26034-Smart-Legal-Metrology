@@ -5201,5 +5201,2191 @@
     },
     "created_at": "2026-09-01T00:34:37.695391",
     "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-B7CD6",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": null,
+      "brand_name": "ITC",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "54.4",
+        "unit": "g",
+        "raw_text": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* 54.4 g"
+      },
+      "mrp": {
+        "value": "10.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP Rs. 10.00 incl. of all taxes"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "26/07/26",
+        "best_before": null,
+        "use_by": "21/01/27"
+      },
+      "consumer_care": {
+        "phone": "1800 425 444 444",
+        "email": "itccares@itc.in",
+        "address": "CONSUMER CARE OFFICE, ITC LIMITED, ITC GREEN CENTRE - 10TH FLOOR, NO. 18, BANASWADI MAIN ROAD, MARUTHISEINAGAR, BENGALURU - 560005"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "brand_name",
+          "value": "ITC",
+          "evidence": "ITC"
+        },
+        {
+          "field": "quantity",
+          "value": "54.4 g",
+          "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* 54.4 g"
+        },
+        {
+          "field": "mrp",
+          "value": "10.00",
+          "evidence": "MRP Rs. 10.00 incl. of all taxes"
+        },
+        {
+          "field": "dates.packing_date",
+          "value": "26/07/26",
+          "evidence": "PKD.: 26/07/26"
+        },
+        {
+          "field": "dates.use_by",
+          "value": "21/01/27",
+          "evidence": "USE BY: 21/01/27"
+        },
+        {
+          "field": "consumer_care.phone",
+          "value": "1800 425 444 444",
+          "evidence": "PHONE: 1800 425 444 444"
+        },
+        {
+          "field": "consumer_care.email",
+          "value": "itccares@itc.in",
+          "evidence": "EMAIL: itccares@itc.in"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "CONSUMER CARE OFFICE, ITC LIMITED, ITC GREEN CENTRE - 10TH FLOOR, NO. 18, BANASWADI MAIN ROAD, MARUTHISEINAGAR, BENGALURU - 560005",
+          "evidence": "CONSUMER CARE OFFICE, ITC LIMITED, ITC GREEN CENTRE - 10TH FLOOR, NO. 18, BANASWADI MAIN ROAD, MARUTHISEINAGAR, BENGALURU - 560005"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "54.4 g",
+        "evidence": "NET WEIGHT: 47.6 g + 6.8 g EXTRA* 54.4 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '54.4 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 26/07/26",
+        "evidence": "26/07/26",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '26/07/26' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Use By: 21/01/27",
+        "evidence": "Use By: 21/01/27",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹10.00",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹10.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP Rs. 10.00 incl. of all taxes",
+        "evidence": "MRP Rs. 10.00 incl. of all taxes",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800 425 444 444 | Email: itccares@itc.in | Addr: CONSUMER CARE OFFICE, ITC LIMITED, ITC GREEN CENTRE - 10TH FLOOR, NO. 18, BANASWADI MAIN ROAD, MARUTHISEINAGAR, BENGALURU - 560005",
+        "evidence": "Tel: 1800 425 444 444 | Email: itccares@itc.in | Addr: CONSUMER CARE OFFICE, ITC LIMITED, ITC GREEN CENTRE - 10TH FLOOR, NO. 18, BANASWADI MAIN ROAD, MARUTHISEINAGAR, BENGALURU - 560005",
+        "reason": "Requirement appears satisfied based on available evidence (3 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 900,
+      "height": 1600,
+      "format": "JPEG",
+      "file_size_kb": 114.75,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-01T00:40:09.832530",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-8DE55",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.0",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "PKD./ USE BY DATE: 30.07.22 / 29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.0",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.0 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-06T10:35:26.509805",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-3CD00",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE: 30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. No manufacturer, packer, or importer identification detected.",
+        "recommendation": "Ensure complete name and address of the manufacturer/packer/importer is declared conspicuously."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The visible/extracted label information does not establish whether the commodity is imported or domestically manufactured.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in India', or domestic manufacturer details."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE: 30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "evidence": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "reason": "Requirement appears satisfied based on available evidence (1 grievance redressal channel(s) detected).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-06T10:37:59.146554",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-83F8B",
+    "status": "NEEDS_REVIEW",
+    "score": 89,
+    "category": "Food",
+    "product": {
+      "product_name": "Doodh Biscuits",
+      "brand_name": "Patanjali",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": null,
+        "name": null,
+        "address": null
+      },
+      "quantity": {
+        "value": "35",
+        "unit": "g",
+        "raw_text": "NET WEIGHT : 35g"
+      },
+      "mrp": {
+        "value": "5.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ : 5.00 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": "30.07.22",
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": "29.01.23"
+      },
+      "consumer_care": {
+        "phone": null,
+        "email": null,
+        "address": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "Patanjali",
+          "evidence": "Patanjali"
+        },
+        {
+          "field": "product_name",
+          "value": "Doodh Biscuits",
+          "evidence": "Doodh Biscuits"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "35g",
+          "evidence": "NET WEIGHT : 35g"
+        },
+        {
+          "field": "mrp",
+          "value": "5.00",
+          "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)"
+        },
+        {
+          "field": "packing_date",
+          "value": "30.07.22",
+          "evidence": "PKD./ USE BY DATE:\n30.07.22"
+        },
+        {
+          "field": "use_by",
+          "value": "29.01.23",
+          "evidence": "29.01.23"
+        },
+        {
+          "field": "best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING"
+        },
+        {
+          "field": "consumer_care",
+          "value": "MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+          "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Manufacturer, packer, or importer information could not be reliably identified from the supplied image. This does not by itself establish that the declaration is absent from the physical package.",
+        "recommendation": "Inspect the back, side, bottom, corners, and small-print areas of the package, or capture a higher-resolution image before determining non-compliance."
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The supplied image/extracted information does not reliably establish whether the commodity is imported or whether an explicit country-of-origin declaration is required.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in', 'Product of', or other explicit origin declarations."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "35 g",
+        "evidence": "NET WEIGHT : 35g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '35 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.packing_date",
+        "status": "PASS",
+        "detected_value": "Pkd: 30.07.22",
+        "evidence": "PKD./ USE BY DATE:\n30.07.22",
+        "reason": "Requirement appears satisfied based on available evidence (Packing date '30.07.22' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹5.00",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹5.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "evidence": "MRP ₹ : 5.00 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Addr: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "evidence": "FOR CONSUMER CARE CONTACT: MANAGER- MARKETING, ADDRESS AS PER REGD. OFFICE",
+        "reason": "Consumer grievance redressal contact information was detected (1 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 0,
+      "review_count": 2,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 627,
+      "height": 391,
+      "format": "JPEG",
+      "file_size_kb": 76.83,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-06T11:00:26.613668",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-64058",
+    "status": "COMPLIANT",
+    "score": 100,
+    "category": "Food",
+    "product": {
+      "product_name": "Royal Butter Delight Biscuits",
+      "brand_name": "Royal Treats",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured by",
+        "name": "ABC Foods & Confectioneries Pvt Ltd",
+        "address": "Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Wt. 200 g (7.05 oz)"
+      },
+      "mrp": {
+        "value": "80.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹80.00 (Inclusive of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "07/2026",
+        "packing_date": "07/2026",
+        "best_before": "6 months from manufacture",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "care@abcfoods.example.in",
+        "address": "Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076"
+      },
+      "country_of_origin": "India",
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "manufacturer",
+          "value": "ABC Foods & Confectioneries Pvt Ltd",
+          "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Butter Delight Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Wt. 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "₹80.00",
+          "evidence": "MRP ₹80.00 (Inclusive of all taxes)"
+        },
+        {
+          "field": "manufacture_date",
+          "value": "07/2026",
+          "evidence": "Mfg. Date: 07/2026"
+        },
+        {
+          "field": "best_before",
+          "value": "6 months",
+          "evidence": "Best before 6 months from packaging"
+        },
+        {
+          "field": "consumer_care",
+          "value": "1800-123-4567",
+          "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in"
+        },
+        {
+          "field": "country_of_origin",
+          "value": "India",
+          "evidence": "Made in India"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured by] ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "PASS",
+        "detected_value": "India",
+        "evidence": "Made in India",
+        "reason": "Country of origin is explicitly declared in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Butter Delight Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Wt. 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 07/2026",
+        "evidence": "Mfg. Date: 07/2026",
+        "reason": "Requirement appears satisfied based on available evidence (Manufacture date '07/2026' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: 6 months from manufacture",
+        "evidence": "Best before 6 months from packaging",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹80.00",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹80.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹80.00 (Inclusive of all taxes)",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: care@abcfoods.example.in | Addr: Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076",
+        "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in",
+        "reason": "Consumer grievance redressal contact information was detected (3 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 9,
+      "fail_count": 0,
+      "review_count": 0,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "file_size_kb": 106.22,
+      "quality_label": "MODERATE",
+      "text_visibility": "READABLE"
+    },
+    "created_at": "2026-09-06T11:03:24.732059",
+    "is_demo": true
+  },
+  {
+    "inspection_id": "LM-2026-717D9",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "HIDE & SEEK",
+      "brand_name": "PARLE",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": "MANUFACTURED FOR",
+        "name": "PARLE BISCUITS PVT LTD",
+        "address": "NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "NET WEIGHT: 200 g"
+      },
+      "mrp": {
+        "value": "60.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ 60.00 INCL. OF ALL TAXES"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": null,
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": "022-6691 6929",
+        "email": "cs@parle.biz",
+        "address": "CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "PARLE",
+          "evidence": "PARLE"
+        },
+        {
+          "field": "product_name",
+          "value": "HIDE & SEEK",
+          "evidence": "HIDE & SEEK"
+        },
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "NET WEIGHT: 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "60.00",
+          "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES"
+        },
+        {
+          "field": "manufacturer",
+          "value": "PARLE BISCUITS PVT LTD",
+          "evidence": "MANUFACTURED FOR: PARLE BISCUITS PVT LTD NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057"
+        },
+        {
+          "field": "dates.best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING."
+        },
+        {
+          "field": "consumer_care.phone",
+          "value": "022-6691 6929",
+          "evidence": "PHONE NO.:022-6691 6929"
+        },
+        {
+          "field": "consumer_care.email",
+          "value": "cs@parle.biz",
+          "evidence": "Email:cs@parle.biz"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[MANUFACTURED FOR] PARLE BISCUITS PVT LTD, NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057",
+        "evidence": "MANUFACTURED FOR: PARLE BISCUITS PVT LTD NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The supplied image/extracted information does not reliably establish whether the commodity is imported or whether an explicit country-of-origin declaration is required.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in', 'Product of', or other explicit origin declarations."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "NET WEIGHT: 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. Neither manufacture date nor packing date was detected.",
+        "recommendation": "Month and year of manufacture or pre-packing must be stated clearly."
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "Best Before: SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹60.00",
+        "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹60.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ 60.00 INCL. OF ALL TAXES",
+        "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 022-6691 6929 | Email: cs@parle.biz | Addr: CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057",
+        "evidence": "Tel: 022-6691 6929 | Email: cs@parle.biz | Addr: CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057",
+        "reason": "Consumer grievance redressal contact information was detected (3 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1200,
+      "height": 1200,
+      "format": "JPEG",
+      "file_size_kb": 215.83,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T11:07:09.741320",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-AEFB2",
+    "status": "NON_COMPLIANT",
+    "score": 83,
+    "category": "Food",
+    "product": {
+      "product_name": "HIDE & SEEK",
+      "brand_name": "PARLE",
+      "generic_name": "BISCUITS",
+      "category": "Food",
+      "manufacturer": {
+        "role": "MANUFACTURED FOR",
+        "name": "PARLE BISCUITS PVT LTD",
+        "address": "NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "NET WEIGHT: 200 g"
+      },
+      "mrp": {
+        "value": "60.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹ 60.00\nINCL. OF ALL TAXES"
+      },
+      "dates": {
+        "manufacture_date": null,
+        "packing_date": null,
+        "best_before": "SIX MONTHS FROM PACKAGING",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": "022-6691 6929",
+        "email": "cs@parle.biz",
+        "address": "CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057"
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "PARLE",
+          "evidence": "PARLE"
+        },
+        {
+          "field": "product_name",
+          "value": "HIDE & SEEK",
+          "evidence": "HIDE & SEEK"
+        },
+        {
+          "field": "generic_name",
+          "value": "BISCUITS",
+          "evidence": "BISCUITS"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "NET WEIGHT: 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "60.00",
+          "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES"
+        },
+        {
+          "field": "dates.best_before",
+          "value": "SIX MONTHS FROM PACKAGING",
+          "evidence": "BEST BEFORE SIX MONTHS FROM PACKAGING."
+        },
+        {
+          "field": "manufacturer.role",
+          "value": "MANUFACTURED FOR",
+          "evidence": "MANUFACTURED FOR:"
+        },
+        {
+          "field": "manufacturer.name",
+          "value": "PARLE BISCUITS PVT LTD",
+          "evidence": "PARLE BISCUITS PVT LTD"
+        },
+        {
+          "field": "manufacturer.address",
+          "value": "NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057",
+          "evidence": "NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057"
+        },
+        {
+          "field": "consumer_care.phone",
+          "value": "022-6691 6929",
+          "evidence": "PHONE NO.:022-6691 6929"
+        },
+        {
+          "field": "consumer_care.email",
+          "value": "cs@parle.biz",
+          "evidence": "Email:cs@parle.biz"
+        },
+        {
+          "field": "consumer_care.address",
+          "value": "CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057",
+          "evidence": "CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[MANUFACTURED FOR] PARLE BISCUITS PVT LTD, NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057",
+        "evidence": "MANUFACTURED FOR, PARLE BISCUITS PVT LTD, NORTH LEVEL CROSSING, VILE PARLE EAST MUMBAI, MH - 400057",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "REVIEW",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "The supplied image/extracted information does not reliably establish whether the commodity is imported or whether an explicit country-of-origin declaration is required.",
+        "recommendation": "Inspect the package for 'Imported by', 'Country of Origin', 'Made in', 'Product of', or other explicit origin declarations."
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "BISCUITS",
+        "evidence": "BISCUITS",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'BISCUITS' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "NET WEIGHT: 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates",
+        "status": "FAIL",
+        "detected_value": null,
+        "evidence": "Evidence not available.",
+        "reason": "Required information appears missing based on current rule applicability. Neither manufacture date nor packing date was detected.",
+        "recommendation": "Month and year of manufacture or pre-packing must be stated clearly."
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: SIX MONTHS FROM PACKAGING",
+        "evidence": "Best Before: SIX MONTHS FROM PACKAGING",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹60.00",
+        "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹60.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹ 60.00\nINCL. OF ALL TAXES",
+        "evidence": "MRP ₹ 60.00 INCL. OF ALL TAXES",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 022-6691 6929 | Email: cs@parle.biz | Addr: CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057",
+        "evidence": "Tel: 022-6691 6929 | Email: cs@parle.biz | Addr: CONSUMER CARE CELL PARLE PRODUCTS PVT. LTD. NORTH LEVEL CROSSING VILE PARLE EAST MUMBAI, MH-400057",
+        "reason": "Consumer grievance redressal contact information was detected (3 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 1,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1200,
+      "height": 1200,
+      "format": "JPEG",
+      "file_size_kb": 215.83,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T11:14:42.767922",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-7D56B",
+    "status": "COMPLIANT",
+    "score": 100,
+    "category": "Food",
+    "product": {
+      "product_name": "TASTY BITES Masala Snacks",
+      "brand_name": "TASTY BITES",
+      "generic_name": "Masala Snacks",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured By",
+        "name": "ABC Food Products Pvt. Ltd.",
+        "address": "123, Industrial Area, Mumbai, India"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Quantity: 200 g"
+      },
+      "mrp": {
+        "value": "120",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP: ₹120 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "13 June 2025",
+        "packing_date": null,
+        "best_before": null,
+        "use_by": "14 Dec 2025"
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "support@abcfood.com",
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "TASTY BITES",
+          "evidence": "TASTY BITES"
+        },
+        {
+          "field": "product_name",
+          "value": "TASTY BITES Masala Snacks",
+          "evidence": "TASTY BITES Masala Snacks"
+        },
+        {
+          "field": "generic_name",
+          "value": "Masala Snacks",
+          "evidence": "Masala Snacks"
+        },
+        {
+          "field": "manufacturer",
+          "value": "ABC Food Products Pvt. Ltd.",
+          "evidence": "Manufactured By: ABC Food Products Pvt. Ltd. 123, Industrial Area, Mumbai, India"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Quantity: 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "120",
+          "evidence": "MRP: ₹120 (Incl. of all taxes)"
+        },
+        {
+          "field": "manufacture_date",
+          "value": "13 June 2025",
+          "evidence": "Mfg. Date: 13 June 2025"
+        },
+        {
+          "field": "use_by",
+          "value": "14 Dec 2025",
+          "evidence": "Exp. Date: 14 Dec 2025"
+        },
+        {
+          "field": "consumer_care_phone",
+          "value": "1800-123-4567",
+          "evidence": "Customer Care: 1800-123-4567"
+        },
+        {
+          "field": "consumer_care_email",
+          "value": "support@abcfood.com",
+          "evidence": "Email: support@abcfood.com"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured By] ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "evidence": "Manufactured By: ABC Food Products Pvt. Ltd. 123, Industrial Area, Mumbai, India",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "NA",
+        "detected_value": "Domestic Manufacturer Identified",
+        "evidence": "ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "reason": "The extracted information identifies a domestic manufacturer/packer with an Indian address. A separate imported-commodity country-of-origin assessment is therefore not treated as applicable.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Masala Snacks",
+        "evidence": "Masala Snacks",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Masala Snacks' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Quantity: 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 13 June 2025",
+        "evidence": "Mfg. Date: 13 June 2025",
+        "reason": "Requirement appears satisfied based on available evidence (Manufacture date '13 June 2025' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Use By: 14 Dec 2025",
+        "evidence": "Exp. Date: 14 Dec 2025",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹120",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹120 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP: ₹120 (Incl. of all taxes)",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "evidence": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "reason": "Consumer grievance redressal contact information was detected (2 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 8,
+      "fail_count": 0,
+      "review_count": 0,
+      "na_count": 1
+    },
+    "image_metadata": {
+      "width": 1354,
+      "height": 1024,
+      "format": "WEBP",
+      "file_size_kb": 121.7,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T11:19:14.804264",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-E6522",
+    "status": "COMPLIANT",
+    "score": 100,
+    "category": "Food",
+    "product": {
+      "product_name": "Royal Butter Delight Biscuits",
+      "brand_name": "Royal Treats",
+      "generic_name": "Biscuits",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured by",
+        "name": "ABC Foods & Confectioneries Pvt Ltd",
+        "address": "Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Wt. 200 g (7.05 oz)"
+      },
+      "mrp": {
+        "value": "80.00",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP ₹80.00 (Inclusive of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "07/2026",
+        "packing_date": "07/2026",
+        "best_before": "6 months from manufacture",
+        "use_by": null
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "care@abcfoods.example.in",
+        "address": "Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076"
+      },
+      "country_of_origin": "India",
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "manufacturer",
+          "value": "ABC Foods & Confectioneries Pvt Ltd",
+          "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076"
+        },
+        {
+          "field": "generic_name",
+          "value": "Biscuits",
+          "evidence": "Butter Delight Biscuits"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Wt. 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "₹80.00",
+          "evidence": "MRP ₹80.00 (Inclusive of all taxes)"
+        },
+        {
+          "field": "manufacture_date",
+          "value": "07/2026",
+          "evidence": "Mfg. Date: 07/2026"
+        },
+        {
+          "field": "best_before",
+          "value": "6 months",
+          "evidence": "Best before 6 months from packaging"
+        },
+        {
+          "field": "consumer_care",
+          "value": "1800-123-4567",
+          "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in"
+        },
+        {
+          "field": "country_of_origin",
+          "value": "India",
+          "evidence": "Made in India"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured by] ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "evidence": "Manufactured by ABC Foods & Confectioneries Pvt Ltd, Plot 45, Industrial Park, Nacharam, Hyderabad, Telangana - 500076",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "PASS",
+        "detected_value": "India",
+        "evidence": "Made in India",
+        "reason": "Country of origin is explicitly declared in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Biscuits",
+        "evidence": "Butter Delight Biscuits",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Biscuits' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Wt. 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 07/2026",
+        "evidence": "Mfg. Date: 07/2026",
+        "reason": "Requirement appears satisfied based on available evidence (Manufacture date '07/2026' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Best Before: 6 months from manufacture",
+        "evidence": "Best before 6 months from packaging",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹80.00",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹80.00 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP ₹80.00 (Inclusive of all taxes)",
+        "evidence": "MRP ₹80.00 (Inclusive of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: care@abcfoods.example.in | Addr: Consumer Redressal Cell, Plot 45, Nacharam, Hyderabad - 500076",
+        "evidence": "For complaints / feedback: Call Toll-Free 1800-123-4567 or email care@abcfoods.example.in",
+        "reason": "Consumer grievance redressal contact information was detected (3 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 9,
+      "fail_count": 0,
+      "review_count": 0,
+      "na_count": 0
+    },
+    "image_metadata": {
+      "width": 1354,
+      "height": 1024,
+      "format": "WEBP",
+      "file_size_kb": 121.7,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T11:23:54.046158",
+    "is_demo": true
+  },
+  {
+    "inspection_id": "LM-2026-CDCF9",
+    "status": "COMPLIANT",
+    "score": 100,
+    "category": "Food",
+    "product": {
+      "product_name": "Masala Snacks",
+      "brand_name": "TASTY BITES",
+      "generic_name": "Snacks",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured By:",
+        "name": "ABC Food Products Pvt. Ltd.",
+        "address": "123, Industrial Area, Mumbai, India"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Quantity: 200 g"
+      },
+      "mrp": {
+        "value": "120",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP: ₹120 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "13 June 2025",
+        "packing_date": null,
+        "best_before": null,
+        "use_by": "14 Dec 2025"
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "support@abcfood.com",
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "TASTY BITES",
+          "evidence": "TASTY BITES"
+        },
+        {
+          "field": "product_name",
+          "value": "Masala Snacks",
+          "evidence": "Masala Snacks"
+        },
+        {
+          "field": "generic_name",
+          "value": "Snacks",
+          "evidence": "Snacks"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Quantity: 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "120",
+          "evidence": "MRP: ₹120 (Incl. of all taxes)"
+        },
+        {
+          "field": "manufacturer",
+          "value": "ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+          "evidence": "Manufactured By:\nABC Food Products Pvt. Ltd.\n123, Industrial Area, Mumbai, India"
+        },
+        {
+          "field": "manufacture_date",
+          "value": "13 June 2025",
+          "evidence": "Mfg. Date:  13 June 2025"
+        },
+        {
+          "field": "use_by",
+          "value": "14 Dec 2025",
+          "evidence": "Exp. Date: 14 Dec 2025"
+        },
+        {
+          "field": "consumer_care_phone",
+          "value": "1800-123-4567",
+          "evidence": "Customer Care: 1800-123-4567"
+        },
+        {
+          "field": "consumer_care_email",
+          "value": "support@abcfood.com",
+          "evidence": "Email: support@abcfood.com"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured By:] ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "evidence": "Manufactured By:\nABC Food Products Pvt. Ltd.\n123, Industrial Area, Mumbai, India",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "NA",
+        "detected_value": "Domestic Manufacturer Identified",
+        "evidence": "ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "reason": "The extracted information identifies a domestic manufacturer/packer with an Indian address. A separate imported-commodity country-of-origin assessment is therefore not treated as applicable.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Snacks",
+        "evidence": "Snacks",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Snacks' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Quantity: 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 13 June 2025",
+        "evidence": "Mfg. Date:  13 June 2025",
+        "reason": "Requirement appears satisfied based on available evidence (Manufacture date '13 June 2025' detected).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.best_before",
+        "status": "PASS",
+        "detected_value": "Use By: 14 Dec 2025",
+        "evidence": "Exp. Date: 14 Dec 2025",
+        "reason": "Requirement appears satisfied based on available evidence (Expiry / Best before period verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹120",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹120 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP: ₹120 (Incl. of all taxes)",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "evidence": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "reason": "Consumer grievance redressal contact information was detected (2 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 8,
+      "fail_count": 0,
+      "review_count": 0,
+      "na_count": 1
+    },
+    "image_metadata": {
+      "width": 1354,
+      "height": 1024,
+      "format": "WEBP",
+      "file_size_kb": 121.7,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T11:37:26.825309",
+    "is_demo": false
+  },
+  {
+    "inspection_id": "LM-2026-51801",
+    "status": "NON_COMPLIANT",
+    "score": 88,
+    "category": "Food",
+    "product": {
+      "product_name": "Masala Snacks",
+      "brand_name": "TASTY BITES",
+      "generic_name": "Snacks",
+      "category": "Food",
+      "manufacturer": {
+        "role": "Manufactured By",
+        "name": "ABC Food Products Pvt. Ltd.",
+        "address": "123, Industrial Area, Mumbai, India"
+      },
+      "quantity": {
+        "value": "200",
+        "unit": "g",
+        "raw_text": "Net Quantity: 200 g"
+      },
+      "mrp": {
+        "value": "120",
+        "currency": "INR",
+        "inclusive_of_taxes": true,
+        "raw_text": "MRP: ₹120 (Incl. of all taxes)"
+      },
+      "dates": {
+        "manufacture_date": "13 June 2025",
+        "packing_date": null,
+        "best_before": null,
+        "use_by": "14 Dec 2025"
+      },
+      "consumer_care": {
+        "phone": "1800-123-4567",
+        "email": "support@abcfood.com",
+        "address": null
+      },
+      "country_of_origin": null,
+      "package_type": "normal",
+      "raw_evidence": [
+        {
+          "field": "brand_name",
+          "value": "TASTY BITES",
+          "evidence": "TASTY BITES"
+        },
+        {
+          "field": "product_name",
+          "value": "Masala Snacks",
+          "evidence": "Masala Snacks"
+        },
+        {
+          "field": "generic_name",
+          "value": "Snacks",
+          "evidence": "Snacks"
+        },
+        {
+          "field": "manufacturer.role",
+          "value": "Manufactured By",
+          "evidence": "Manufactured By:"
+        },
+        {
+          "field": "manufacturer.name",
+          "value": "ABC Food Products Pvt. Ltd.",
+          "evidence": "ABC Food Products Pvt. Ltd."
+        },
+        {
+          "field": "manufacturer.address",
+          "value": "123, Industrial Area, Mumbai, India",
+          "evidence": "123, Industrial Area, Mumbai, India"
+        },
+        {
+          "field": "quantity",
+          "value": "200 g",
+          "evidence": "Net Quantity: 200 g"
+        },
+        {
+          "field": "mrp",
+          "value": "120",
+          "evidence": "MRP: ₹120 (Incl. of all taxes)"
+        },
+        {
+          "field": "dates.manufacture_date",
+          "value": "13 June 2025",
+          "evidence": "Mfg. Date: 13 June 2025"
+        },
+        {
+          "field": "dates.use_by",
+          "value": "14 Dec 2025",
+          "evidence": "Exp. Date: 14 Dec 2025"
+        },
+        {
+          "field": "consumer_care.phone",
+          "value": "1800-123-4567",
+          "evidence": "Customer Care: 1800-123-4567"
+        },
+        {
+          "field": "consumer_care.email",
+          "value": "support@abcfood.com",
+          "evidence": "Email: support@abcfood.com"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "rule_id": "LM-001",
+        "rule_name": "Manufacturer / Packer / Importer Details",
+        "field": "manufacturer",
+        "status": "PASS",
+        "detected_value": "[Manufactured By] ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "evidence": "Manufactured By, ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "reason": "Manufacturer/packer/importer entity name and address were identified in the extracted package information.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-002",
+        "rule_name": "Country of Origin",
+        "field": "country_of_origin",
+        "status": "NA",
+        "detected_value": "Domestic Manufacturer Identified",
+        "evidence": "ABC Food Products Pvt. Ltd., 123, Industrial Area, Mumbai, India",
+        "reason": "The extracted information identifies a domestic manufacturer/packer with an Indian address. A separate imported-commodity country-of-origin assessment is therefore not treated as applicable.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-003",
+        "rule_name": "Generic Product Name",
+        "field": "generic_name",
+        "status": "PASS",
+        "detected_value": "Snacks",
+        "evidence": "Snacks",
+        "reason": "Requirement appears satisfied based on available evidence (Generic name 'Snacks' identified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-004",
+        "rule_name": "Net Quantity",
+        "field": "quantity",
+        "status": "PASS",
+        "detected_value": "200 g",
+        "evidence": "Net Quantity: 200 g",
+        "reason": "Requirement appears satisfied based on available evidence (Net quantity '200 g' verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-005",
+        "rule_name": "Manufacture / Packing Date",
+        "field": "dates.manufacture_date",
+        "status": "PASS",
+        "detected_value": "Mfg: 13 June 2025",
+        "evidence": "13 June 2025",
+        "reason": "Manufacture date '13 June 2025' was detected.",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-006",
+        "rule_name": "Best Before / Use By Date",
+        "field": "dates.use_by",
+        "status": "FAIL",
+        "detected_value": "Use By: 14 Dec 2025",
+        "evidence": "14 Dec 2025",
+        "reason": "The declared use by date 14 Dec 2025 has expired as of 06 Sep 2026.",
+        "recommendation": "Product is expired and must not be treated as compliant."
+      },
+      {
+        "rule_id": "LM-007",
+        "rule_name": "Maximum Retail Price (MRP)",
+        "field": "mrp.value",
+        "status": "PASS",
+        "detected_value": "₹120",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Maximum Retail Price ₹120 verified).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-008",
+        "rule_name": "MRP Tax-Inclusive Indication",
+        "field": "mrp.inclusive_of_taxes",
+        "status": "PASS",
+        "detected_value": "MRP: ₹120 (Incl. of all taxes)",
+        "evidence": "MRP: ₹120 (Incl. of all taxes)",
+        "reason": "Requirement appears satisfied based on available evidence (Tax-inclusive indication identified with MRP).",
+        "recommendation": null
+      },
+      {
+        "rule_id": "LM-009",
+        "rule_name": "Consumer Care Details",
+        "field": "consumer_care",
+        "status": "PASS",
+        "detected_value": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "evidence": "Tel: 1800-123-4567 | Email: support@abcfood.com",
+        "reason": "Consumer grievance redressal contact information was detected (2 channel(s)).",
+        "recommendation": null
+      }
+    ],
+    "summary": {
+      "pass_count": 7,
+      "fail_count": 1,
+      "review_count": 0,
+      "na_count": 1
+    },
+    "image_metadata": {
+      "width": 1354,
+      "height": 1024,
+      "format": "WEBP",
+      "file_size_kb": 121.7,
+      "quality_label": "GOOD",
+      "text_visibility": "CLEAR"
+    },
+    "created_at": "2026-09-06T12:03:45.015059",
+    "is_demo": false
   }
 ]

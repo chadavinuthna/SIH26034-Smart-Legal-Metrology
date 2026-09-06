@@ -62,9 +62,47 @@ generic_name when the individual words or phrases are visibly identifiable.
 4L. Before returning JSON, check that every raw_evidence item's evidence contains
 the exact extracted value or is an exact directly-supporting label phrase.
 5. Extract Manufacturer / Packer / Importer information:
-   - role: 'Manufactured by' / 'Packed by' / 'Imported by' / etc.
-   - name: Company or firm name
-   - address: Complete postal/operational address with city/state/PIN if visible
+
+Search the ENTIRE package image carefully, including the front, back,
+left side, right side, top, bottom, corners, and all small-print areas.
+
+Look specifically for:
+"Manufactured by"
+"Manufactured & Packed by"
+"Manufactured and Packed by"
+"Mfd. by"
+"Mfg. by"
+"Packed by"
+"Pkd. by"
+"Imported by"
+"Importer"
+"Marketed by"
+"Manufactured for"
+
+If an explicit manufacturer/packer/importer declaration is visible,
+extract:
+
+- role: the exact visible declaration
+- name: the company or firm associated with the declaration
+- address: the complete visible address associated with that entity
+
+IMPORTANT:
+- Do NOT infer the manufacturer from the brand name.
+- Do NOT infer the manufacturer from a logo.
+- Do NOT infer the manufacturer from a barcode.
+- Do NOT infer the manufacturer from a phone number or website.
+- Do NOT use consumer-care information as manufacturer information.
+- Do NOT use "ADDRESS AS PER REGD. OFFICE" alone as manufacturer evidence.
+- Do NOT invent or guess missing information.
+
+If the declaration and company name are visible but the address is
+unreadable, return the company name and set address to null.
+
+If no explicit manufacturer/packer/importer declaration is visible,
+return role, name, and address as null.
+
+If text is too small, blurry, cropped, folded, or unreadable,
+return null rather than guessing.
 6. Extract Net Quantity:
    - value: numeric amount (e.g., '200', '1.5', '10')
    - unit: standardized SI unit (e.g., 'g', 'kg', 'ml', 'L', 'N', 'units')
@@ -330,7 +368,7 @@ class AIService:
                     data=json.dumps(payload).encode("utf-8"),
                     headers={"Content-Type": "application/json"},
                 )
-                with urllib.request.urlopen(req, timeout=35) as resp:
+                with urllib.request.urlopen(req, timeout=20) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     candidates = data.get("candidates", [])
                     if not candidates:

@@ -1,5 +1,6 @@
 """Rule Engine for deterministic Legal Metrology compliance evaluation."""
 from typing import List, Tuple
+
 from ..schemas import (
     ProductData,
     RuleResult,
@@ -11,19 +12,15 @@ from .common_rules import ALL_RULES
 
 
 class ComplianceRuleEngine:
-    """Executes deterministic Legal Metrology rules against extracted ProductData.
-
-    Strict Architectural Separation:
-    - Pure algorithmic evaluation.
-    - Zero generative AI calls or LLM prompts inside this engine.
-    - Gemini extracts raw declarations; this engine executes statutory compliance logic.
-    """
+    """Executes deterministic Legal Metrology rules against extracted ProductData."""
 
     def __init__(self, rules=None):
         self.rules = rules or ALL_RULES
 
-    def evaluate(self, product: ProductData) -> Tuple[List[RuleResult], InspectionSummary, OverallStatus, int]:
-        """Run all registered compliance rules against structured product data."""
+    def evaluate(
+        self, product: ProductData
+    ) -> Tuple[List[RuleResult], InspectionSummary, OverallStatus, int]:
+
         results: List[RuleResult] = []
         pass_count = 0
         fail_count = 0
@@ -43,8 +40,8 @@ class ComplianceRuleEngine:
                     review_count += 1
                 elif res.status == ComplianceStatus.NA:
                     na_count += 1
+
             except Exception as e:
-                # Catch rule runtime anomaly cleanly without breaking engine
                 results.append(
                     RuleResult(
                         rule_id="ERR",
@@ -66,10 +63,10 @@ class ComplianceRuleEngine:
             na_count=na_count,
         )
 
-        # Deterministic Overall Status Logic:
-        # IF any applicable rule = FAIL -> NON_COMPLIANT
-        # ELSE IF any applicable rule = REVIEW -> NEEDS_REVIEW
-        # ELSE -> COMPLIANT
+        # Overall result:
+        # Any FAIL -> NON_COMPLIANT
+        # Otherwise any REVIEW -> NEEDS_REVIEW
+        # Otherwise -> COMPLIANT
         if fail_count > 0:
             overall_status = OverallStatus.NON_COMPLIANT
         elif review_count > 0:
@@ -77,19 +74,26 @@ class ComplianceRuleEngine:
         else:
             overall_status = OverallStatus.COMPLIANT
 
-        # Prototype Screening Score Calculation:
-        # Only applicable rules (PASS + FAIL + REVIEW) are included in the score denominator.
-        # NA rules do NOT reduce or alter the score.
-        # REVIEW rules receive partial weight (0.5) without being treated as strict violations.
+        # Score:
+        # PASS = 100%
+        # REVIEW = 50%
+        # FAIL = 0%
+        # NA is excluded from denominator.
         applicable_count = pass_count + fail_count + review_count
+
         if applicable_count > 0:
-            weighted_points = (pass_count * 1.0) + (review_count * 0.5) + (fail_count * 0.0)
-            score = int(round((weighted_points / applicable_count) * 100))
+            weighted_points = (
+                pass_count * 1.0
+                + review_count * 0.5
+                + fail_count * 0.0
+            )
+            score = int(round(
+                (weighted_points / applicable_count) * 100
+            ))
         else:
-            score = 100
+            score = 0
 
         return results, summary, overall_status, score
 
 
-# Singleton instance for standard use
 rule_engine = ComplianceRuleEngine()
