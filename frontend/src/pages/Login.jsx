@@ -1,109 +1,152 @@
-import React, { useState } from "react";
-import { Scale, Lock, User, Sparkles, ShieldCheck, ArrowRight } from "lucide-react";
+import React, { useState } from 'react';
+import { Shield, Lock, User, ArrowRight, Sparkles, CheckCircle2, FileCheck2 } from 'lucide-react';
 
-export default function Login({ onLoginSuccess }) {
-  const [officerId, setOfficerId] = useState("LM-OFF-8842");
-  const [password, setPassword] = useState("••••••••");
+export default function Login({ onLogin }) {
+  const [officerId, setOfficerId] = useState('LM-INSP-4092');
+  const [password, setPassword] = useState('••••••••');
+  const [department, setDepartment] = useState('Legal Metrology Enforcement Wing');
 
-  const handleSubmit = (e) => {
+  const handleSignIn = (e) => {
     e.preventDefault();
-    onLoginSuccess();
+    onLogin({
+      officer_id: officerId.trim() || 'LM-INSP-4092',
+      name: 'Inspector A. Sharma',
+      department: department,
+    });
+  };
+
+  const handleDemoLogin = () => {
+    onLogin({
+      officer_id: 'LM-DEMO-2026',
+      name: 'Demo Inspection Officer',
+      department: 'Legal Metrology Department (Demo Session)',
+      is_demo: true,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Graphic Accents */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-
-      <div className="max-w-md w-full relative z-10 space-y-6">
-        {/* Department Badge Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex p-3.5 bg-blue-900/80 text-amber-400 rounded-2xl border border-blue-700/60 shadow-xl">
-            <Scale className="w-10 h-10" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Legal Metrology Portal</h1>
-            <p className="text-xs text-slate-400 font-medium mt-1">
-              Government of India — Package Compliance System (SIH26034)
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Decorative Government Header Accent */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0F2942] border-2 border-amber-400/40 text-amber-400 shadow-xl mb-4">
+          <Shield size={34} className="stroke-[2.2]" />
         </div>
+        <div className="text-xs font-black tracking-widest text-amber-700 uppercase">
+          Department of Consumer Affairs • Legal Metrology
+        </div>
+        <h2 className="mt-1 text-2xl font-extrabold text-[#0F2942] tracking-tight">
+          Package Compliance Portal
+        </h2>
+        <p className="mt-1.5 text-xs text-slate-500 max-w-sm mx-auto">
+          Smart India Hackathon Prototype (SIH26034) for automated label declaration inspection.
+        </p>
+      </div>
 
-        {/* Form Card */}
-        <div className="bg-slate-800/90 rounded-2xl border border-slate-700/80 p-8 shadow-2xl space-y-6 backdrop-blur-md">
-          <div className="border-b border-slate-700/80 pb-4">
-            <h2 className="text-base font-bold text-white">Inspector Authentication</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Enter official credentials or launch instant demo session
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Main Login Card */}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl shadow-xl border border-slate-200">
+          <form className="space-y-4" onSubmit={handleSignIn}>
+            {/* Officer ID */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                Officer ID / Username
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                Officer / Inspector ID
               </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <div className="relative rounded-lg shadow-2xs">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <User size={16} />
+                </div>
                 <input
                   type="text"
+                  required
                   value={officerId}
                   onChange={(e) => setOfficerId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900 text-white rounded-xl border border-slate-700 focus:border-blue-500 focus:outline-none text-xs font-medium"
-                  placeholder="e.g. LM-OFF-8842"
-                  required
+                  placeholder="e.g. LM-INSP-4092"
+                  className="block w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 font-mono text-slate-900 bg-slate-50/50"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                Security Password
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                Security Passcode
               </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <div className="relative rounded-lg shadow-2xs">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock size={16} />
+                </div>
                 <input
                   type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900 text-white rounded-xl border border-slate-700 focus:border-blue-500 focus:outline-none text-xs font-medium"
                   placeholder="••••••••"
-                  required
+                  className="block w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-slate-900 bg-slate-50/50"
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2"
-            >
-              <span>Sign In to Compliance Portal</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* Department */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                Designated Wing
+              </label>
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="block w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-slate-800 bg-white"
+              >
+                <option>Legal Metrology Enforcement Wing</option>
+                <option>Packaged Commodities Inspection Directorate</option>
+                <option>Consumer Protection & Standards Cell</option>
+              </select>
+            </div>
+
+            {/* Sign In Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#0F2942] hover:bg-[#18395B] shadow-md hover:shadow-lg transition-all duration-150 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+              >
+                <span>Sign In as Enforcement Officer</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
           </form>
 
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-slate-700 w-full"></div>
-            <span className="bg-slate-800 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
-              OR FOR EVALUATION
-            </span>
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-slate-400 font-semibold">or instant access</span>
+            </div>
           </div>
 
-          {/* Instant Demo Login Button */}
-          <button
-            onClick={onLoginSuccess}
-            className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 group"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-            <span>Launch Instant Demo Mode</span>
-          </button>
+          {/* Demo Login Button */}
+          <div>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 hover:bg-amber-100 hover:border-amber-400 shadow-2xs transition-all duration-150"
+            >
+              <Sparkles size={15} className="text-amber-600" />
+              <span>Demo Login (Instant Evaluation)</span>
+            </button>
+            <p className="text-[11px] text-center text-slate-500 mt-2">
+              1-click access with pre-loaded mock data and rule engine test scenarios.
+            </p>
+          </div>
         </div>
 
-        {/* Disclaimer Note */}
-        <p className="text-[11px] text-center text-slate-500">
-          SIH26034 Prototype V1 • Smart Legal Metrology Package Compliance System
-        </p>
+        {/* Legal Disclaimer Footer */}
+        <div className="mt-6 text-center text-[11px] text-slate-400 space-y-1">
+          <p className="font-semibold text-slate-500">Smart Legal Metrology Package Compliance System</p>
+          <p>
+            Prototype screening result. Final regulatory determination should be verified by an authorized Legal Metrology officer and applicable current regulations.
+          </p>
+        </div>
       </div>
     </div>
   );

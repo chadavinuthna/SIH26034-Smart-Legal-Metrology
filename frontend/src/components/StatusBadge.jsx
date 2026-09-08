@@ -1,65 +1,75 @@
-import React from "react";
-import { CheckCircle2, XCircle, AlertTriangle, MinusCircle, ShieldCheck, ShieldAlert } from "lucide-react";
+import React from 'react';
+import { CheckCircle2, XCircle, AlertTriangle, MinusCircle } from 'lucide-react';
 
-export default function StatusBadge({ status, size = "md", showIcon = true }) {
-  const normalized = (status || "").toUpperCase();
+export default function StatusBadge({ status, size = 'md', showIcon = true, className = '' }) {
+  const norm = (status || '').toUpperCase();
 
   const configs = {
     PASS: {
-      bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      bg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
       icon: CheckCircle2,
-      label: "PASS",
+      label: 'PASS',
+      iconColor: 'text-emerald-600',
     },
     COMPLIANT: {
-      bg: "bg-emerald-600 text-white border-emerald-700",
-      icon: ShieldCheck,
-      label: "COMPLIANT",
+      bg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      icon: CheckCircle2,
+      label: 'COMPLIANT',
+      iconColor: 'text-emerald-600',
     },
     FAIL: {
-      bg: "bg-rose-50 text-rose-700 border-rose-200",
+      bg: 'bg-rose-50 text-rose-800 border-rose-200',
       icon: XCircle,
-      label: "FAIL",
+      label: 'FAIL',
+      iconColor: 'text-rose-600',
     },
     NON_COMPLIANT: {
-      bg: "bg-rose-600 text-white border-rose-700",
-      icon: ShieldAlert,
-      label: "NON-COMPLIANT",
+      bg: 'bg-rose-50 text-rose-800 border-rose-200',
+      icon: XCircle,
+      label: 'NON-COMPLIANT',
+      iconColor: 'text-rose-600',
     },
     REVIEW: {
-      bg: "bg-amber-50 text-amber-700 border-amber-200",
+      bg: 'bg-amber-50 text-amber-800 border-amber-200',
       icon: AlertTriangle,
-      label: "REVIEW",
+      label: 'REVIEW',
+      iconColor: 'text-amber-600',
     },
     NEEDS_REVIEW: {
-      bg: "bg-amber-500 text-white border-amber-600",
+      bg: 'bg-amber-50 text-amber-800 border-amber-200',
       icon: AlertTriangle,
-      label: "NEEDS REVIEW",
+      label: 'NEEDS REVIEW',
+      iconColor: 'text-amber-600',
     },
     NA: {
-      bg: "bg-slate-100 text-slate-600 border-slate-200",
+      bg: 'bg-slate-100 text-slate-700 border-slate-200',
       icon: MinusCircle,
-      label: "N/A",
+      label: 'N/A',
+      iconColor: 'text-slate-500',
     },
   };
 
-  const config = configs[normalized] || {
-    bg: "bg-slate-100 text-slate-700 border-slate-200",
-    icon: MinusCircle,
-    label: normalized,
-  };
-
-  const IconComponent = config.icon;
+  const current = configs[norm] || configs.REVIEW;
+  const IconComponent = current.icon;
 
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-xs font-semibold rounded-md border",
-    md: "px-2.5 py-1 text-xs font-bold rounded-lg border tracking-wide",
-    lg: "px-4 py-1.5 text-sm font-extrabold rounded-lg border shadow-sm tracking-wider uppercase",
+    sm: 'text-xs px-2 py-0.5 font-medium',
+    md: 'text-xs px-2.5 py-1 font-semibold tracking-wide',
+    lg: 'text-sm px-3.5 py-1.5 font-bold tracking-wider',
+  };
+
+  const iconSizes = {
+    sm: 12,
+    md: 14,
+    lg: 16,
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 ${config.bg} ${sizeClasses[size]}`}>
-      {showIcon && <IconComponent className={size === "lg" ? "w-4 h-4" : "w-3.5 h-3.5"} />}
-      <span>{config.label}</span>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border ${current.bg} ${sizeClasses[size]} ${className}`}
+    >
+      {showIcon && <IconComponent size={iconSizes[size]} className={current.iconColor} />}
+      <span>{current.label}</span>
     </span>
   );
 }

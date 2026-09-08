@@ -1,91 +1,113 @@
-import React from "react";
-import StatusBadge from "./StatusBadge";
-import { X, FileText, AlertCircle, Lightbulb, ShieldCheck, CheckCircle2 } from "lucide-react";
+import React, { useEffect } from 'react';
+import { X, CheckCircle, AlertTriangle, XCircle, Info, Quote, Lightbulb } from 'lucide-react';
+import StatusBadge from './StatusBadge';
 
-export default function CheckDetailModal({ check, onClose }) {
-  if (!check) return null;
+export default function CheckDetailModal({ check, isOpen, onClose }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !check) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in no-print">
-      <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      {/* Backdrop click */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Modal Card */}
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-150">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
-            <span className="px-2 py-0.5 bg-blue-950 text-blue-300 font-mono text-xs font-bold rounded-md border border-blue-800">
+            <span className="font-mono text-xs font-bold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-2xs">
               {check.rule_id}
             </span>
-            <h3 className="font-bold text-base tracking-tight">{check.rule_name}</h3>
+            <h3 className="text-base font-bold text-slate-900">
+              {check.rule_name}
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+            title="Close modal (Esc)"
           >
-            <X className="w-5 h-5" />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-5 text-sm">
-          {/* Status Banner */}
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Evaluation Result</p>
-              <p className="text-xs font-medium text-slate-700 mt-0.5">
-                Evaluated deterministically under Legal Metrology Act Rules
-              </p>
-            </div>
+        {/* Modal Content */}
+        <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          {/* Status Row */}
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Verification Status
+            </span>
             <StatusBadge status={check.status} size="lg" />
           </div>
 
           {/* Detected Value */}
-          <div className="space-y-1.5">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Detected Value</h4>
-            <div className="p-3 bg-slate-100/80 rounded-xl border border-slate-200 font-medium text-slate-800">
-              {check.detected_value || "Not detected"}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Detected Declaration
+            </label>
+            <div className="p-3.5 rounded-xl bg-slate-900 text-slate-100 font-mono text-sm break-words border border-slate-800">
+              {check.detected_value || (
+                <span className="text-slate-400 italic">Not detected on visible package label</span>
+              )}
             </div>
           </div>
 
-          {/* Source Evidence */}
-          <div className="space-y-1.5">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-blue-600" />
-              <span>Evidence & Source Label Text</span>
-            </h4>
-            <div className="p-3.5 bg-blue-50/50 rounded-xl border border-blue-100 font-mono text-xs text-blue-950 leading-relaxed whitespace-pre-wrap">
-              {check.evidence || "Evidence not available."}
+          {/* Evidence / Verbatim Quote */}
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              <Quote size={13} className="text-blue-600" />
+              <span>Verbatim Package Evidence</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100 text-slate-800 text-sm italic font-serif leading-relaxed">
+              "{check.evidence || 'Evidence not available.'}"
             </div>
           </div>
 
-          {/* Reason / Explanation */}
-          <div className="space-y-1.5">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-slate-600" />
-              <span>Why This Result Was Calculated</span>
-            </h4>
-            <p className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-slate-700 leading-relaxed text-xs">
+          {/* Reason / Why */}
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              <Info size={13} className="text-slate-600" />
+              <span>Regulatory Assessment Rationale</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm leading-relaxed">
               {check.reason}
-            </p>
+            </div>
           </div>
 
           {/* Recommendation if any */}
           {check.recommendation && (
-            <div className="space-y-1.5">
-              <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-                <span>Inspector Recommendation</span>
-              </h4>
-              <p className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-amber-900 leading-relaxed text-xs font-medium">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 mb-1.5">
+                <Lightbulb size={13} className="text-amber-600" />
+                <span>Inspector Action / Compliance Recommendation</span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 text-sm leading-relaxed">
                 {check.recommendation}
-              </p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Modal Footer */}
-        <div className="bg-slate-50 p-4 border-t border-slate-200 flex justify-end">
+        {/* Footer */}
+        <div className="flex items-center justify-end px-6 py-3.5 bg-slate-50 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg shadow-2xs transition-colors"
           >
             Close Details
           </button>

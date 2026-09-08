@@ -1,20 +1,44 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Environments
-.env
-.venv
+.Python
 env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 venv/
 ENV/
 
-# Node & Frontend
-node_modules/
-dist/
-.DS_Store
+# Secrets & Environment Variables
+.env
+.env.local
+.env.production
+.env.development
 
-# Storage
-backend/data/inspections.json
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

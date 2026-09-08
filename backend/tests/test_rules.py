@@ -1,166 +1,811 @@
 import pytest
+
 from app.schemas import (
-    ConsumerCareData,
-    DateApplicabilityEnum,
-    DatesData,
-    ImportStatusEnum,
-    ManufacturerData,
-    MrpData,
     ProductData,
-    QuantityData,
-    RuleStatusEnum,
+    ManufacturerInfo,
+    QuantityInfo,
+    MRPInfo,
+    DateInfo,
+    ConsumerCareInfo,
+    EvidenceItem,
+    ComplianceStatus,
+    OverallStatus,
 )
+
 from app.rules.common_rules import (
-    check_lm001_manufacturer,
-    check_lm002_country_of_origin,
-    check_lm003_generic_name,
-    check_lm004_net_quantity,
-    check_lm005_manufacture_date,
-    check_lm006_best_before,
-    check_lm007_mrp,
-    check_lm008_mrp_tax_inclusive,
-    check_lm009_consumer_care,
+    check_lm_001_manufacturer,
+    check_lm_002_country_of_origin,
+    check_lm_003_generic_name,
+    check_lm_004_net_quantity,
+    check_lm_005_mfg_packing_date,
+    check_lm_006_best_before_use_by,
+    check_lm_007_mrp,
+    check_lm_008_mrp_tax_inclusive,
+    check_lm_009_consumer_care,
 )
-from app.rules.rule_engine import evaluate_product_compliance
-from app.services.ai_service import get_demo_compliant_product, get_demo_non_compliant_product
+
+from app.rules.rule_engine import ComplianceRuleEngine
 
 
-def test_1_lm001_name_present_address_missing():
-    p = ProductData(manufacturer=ManufacturerData(name="XYZ Foods", address=None))
-    res = check_lm001_manufacturer(p)
-    assert res.status == RuleStatusEnum.FAIL
-    assert "Address missing" in res.detected_value
+# ============================================================
+# LM-001 Manufacturer / Packer / Importer
+# ============================================================
+
+def test_lm001_name_and_address_present():
+    product = ProductData(
+        manufacturer=ManufacturerInfo(
+            name="XYZ Foods",
+            address="123 Main Road, Delhi, India - 110001",
+        )
+    )
+
+    result = check_lm_001_manufacturer(product)
+
+    assert result.rule_id == "LM-001"
+    assert result.status == ComplianceStatus.PASS
+    assert result.detected_value is not None
 
 
-def test_2_lm002_imported_country_present():
-    p = ProductData(import_status=ImportStatusEnum.IMPORTED, country_of_origin="China")
-    res = check_lm002_country_of_origin(p)
-    assert res.status == RuleStatusEnum.PASS
-    assert res.detected_value == "China"
+def test_lm001_name_present_address_missing():
+    product = ProductData(
+        manufacturer=ManufacturerInfo(
+            name="XYZ Foods",
+            address=None,
+        )
+    )
+
+    result = check_lm_001_manufacturer(product)
+
+    assert result.rule_id == "LM-001"
+    assert result.status == ComplianceStatus.REVIEW
+    assert result.detected_value == "XYZ Foods"
 
 
-def test_3_lm002_imported_country_missing():
-    p = ProductData(import_status=ImportStatusEnum.IMPORTED, country_of_origin=None)
-    res = check_lm002_country_of_origin(p)
-    assert res.status == RuleStatusEnum.FAIL
-    assert res.detected_value == "Missing"
+def test_lm001_name_missing_address_present():
+    product = ProductData(
+        manufacturer=ManufacturerInfo(
+            name=None,
+            address="123 Main Road, Delhi, India - 110001",
+        )
+    )
+
+    result = check_lm_001_manufacturer(product)
+
+    assert result.rule_id == "LM-001"
+    assert result.status == ComplianceStatus.REVIEW
 
 
-def test_4_lm002_domestic_india():
-    p = ProductData(import_status=ImportStatusEnum.DOMESTIC, country_of_origin="India")
-    res = check_lm002_country_of_origin(p)
-    assert res.status == RuleStatusEnum.NA
-    assert "India" in res.detected_value
+def test_lm001_name_and_address_missing():
+    product = ProductData(
+        manufacturer=ManufacturerInfo(
+            name=None,
+            address=None,
+        )
+    )
+
+    result = check_lm_001_manufacturer(product)
+
+    assert result.rule_id == "LM-001"
+    assert result.status == ComplianceStatus.FAIL
 
 
-def test_5_lm002_uncertain_import_status():
-    p = ProductData(import_status=ImportStatusEnum.UNCERTAIN, country_of_origin=None)
-    res = check_lm002_country_of_origin(p)
-    assert res.status == RuleStatusEnum.REVIEW
-    assert "Import status and Country of Origin could not be conclusively verified" in res.reason
+# ============================================================
+# LM-002 Country of Origin
+# ============================================================
+
+def test_lm002_imported_country_present():
+    product = ProductData(
+        country_of_origin="China",
+        manufacturer=ManufacturerInfo(
+            role="Imported by",
+            name="ABC Imports",
+            address="Mumbai, India",
+        ),
+    )
+
+    result = check_lm_002_country_of_origin(product)
+
+    assert result.rule_id == "LM-002"
+    assert result.status == ComplianceStatus.PASS
+    assert "China" in result.detected_value
 
 
-def test_6_lm003_generic_name_missing():
-    p = ProductData(brand_name="XYZ Snacks", generic_name=None)
-    res = check_lm003_generic_name(p)
-    assert res.status == RuleStatusEnum.FAIL
-    assert 'Brand found: "XYZ Snacks"; generic name not detected' in res.detected_value
+def test_lm002_imported_country_missing():
+    product = ProductData(
+        country_of_origin=None,
+        manufacturer=ManufacturerInfo(
+            role="Imported by",
+            name="ABC Imports",
+            address="Mumbai, India",
+        ),
+    )
+
+    result = check_lm_002_country_of_origin(product)
+
+    assert result.rule_id == "LM-002"
+    assert result.status == ComplianceStatus.FAIL
 
 
-def test_7_lm003_generic_name_present():
-    p = ProductData(brand_name="Golden Harvest", generic_name="Biscuits")
-    res = check_lm003_generic_name(p)
-    assert res.status == RuleStatusEnum.PASS
-    assert res.detected_value == "Biscuits"
+def test_lm002_made_in_india():
+    product = ProductData(
+        country_of_origin="India",
+        manufacturer=ManufacturerInfo(
+            role="Manufactured by",
+            name="Indian Foods Pvt Ltd",
+            address="Delhi, India - 110001",
+        ),
+    )
+
+    result = check_lm_002_country_of_origin(product)
+
+    assert result.rule_id == "LM-002"
+    assert result.status == ComplianceStatus.PASS
 
 
-def test_8_lm004_net_quantity_500g():
-    p = ProductData(quantity=QuantityData(value="500", unit="g", raw_text="500g"))
-    res = check_lm004_net_quantity(p)
-    assert res.status == RuleStatusEnum.PASS
-    assert res.detected_value == "500 g"
-    assert res.evidence == "500g"
+def test_lm002_domestic_manufacturer():
+    product = ProductData(
+        country_of_origin=None,
+        manufacturer=ManufacturerInfo(
+            role="Manufactured by",
+            name="Indian Foods Pvt Ltd",
+            address="Delhi, India - 110001",
+        ),
+    )
+
+    result = check_lm_002_country_of_origin(product)
+
+    assert result.rule_id == "LM-002"
+    assert result.status == ComplianceStatus.NA
 
 
-def test_9_lm005_missing_dates():
-    p = ProductData(dates=DatesData())
-    res = check_lm005_manufacture_date(p)
-    assert res.status == RuleStatusEnum.FAIL
-    assert res.detected_value == "Not detected"
+def test_lm002_uncertain_origin():
+    product = ProductData(
+        country_of_origin=None,
+        manufacturer=ManufacturerInfo(
+            name="ABC Foods",
+            address="Somewhere",
+        ),
+    )
+
+    result = check_lm_002_country_of_origin(product)
+
+    assert result.rule_id == "LM-002"
+    assert result.status == ComplianceStatus.REVIEW
 
 
-def test_10_lm006_applicable_missing_date():
-    p = ProductData(category="Food", date_applicability=DateApplicabilityEnum.APPLICABLE, dates=DatesData())
-    res = check_lm006_best_before(p)
-    assert res.status == RuleStatusEnum.FAIL
+# ============================================================
+# LM-003 Generic Product Name
+# ============================================================
+
+def test_lm003_generic_name_present():
+    product = ProductData(
+        brand_name="Tasty",
+        generic_name="Biscuits",
+    )
+
+    result = check_lm_003_generic_name(product)
+
+    assert result.rule_id == "LM-003"
+    assert result.status == ComplianceStatus.PASS
+    assert result.detected_value == "Biscuits"
 
 
-def test_11_lm006_applicability_uncertain():
-    p = ProductData(category=None, date_applicability=DateApplicabilityEnum.UNCERTAIN, dates=DatesData())
-    res = check_lm006_best_before(p)
-    assert res.status == RuleStatusEnum.REVIEW
+def test_lm003_generic_name_missing():
+    product = ProductData(
+        brand_name="Tasty",
+        generic_name=None,
+    )
+
+    result = check_lm_003_generic_name(product)
+
+    assert result.rule_id == "LM-003"
+    assert result.status == ComplianceStatus.FAIL
 
 
-def test_12_lm006_not_applicable():
-    p = ProductData(category="Electronics", date_applicability=DateApplicabilityEnum.NOT_APPLICABLE, dates=DatesData())
-    res = check_lm006_best_before(p)
-    assert res.status == RuleStatusEnum.NA
+def test_lm003_generic_name_same_as_brand():
+    product = ProductData(
+        brand_name="Biscuits",
+        generic_name="Biscuits",
+    )
+
+    result = check_lm_003_generic_name(product)
+
+    assert result.rule_id == "LM-003"
+    assert result.status == ComplianceStatus.REVIEW
 
 
-def test_13_lm007_explicit_mrp():
-    p = ProductData(mrp=MrpData(value="120", currency="INR", raw_text="MRP ₹120"))
-    res = check_lm007_mrp(p)
-    assert res.status == RuleStatusEnum.PASS
-    assert res.detected_value == "₹120"
-    assert res.evidence == "MRP ₹120"
+# ============================================================
+# LM-004 Net Quantity
+# ============================================================
+
+def test_lm004_quantity_and_unit_present():
+    product = ProductData(
+        quantity=QuantityInfo(
+            value="200",
+            unit="g",
+            raw_text="Net Wt. 200g",
+        )
+    )
+
+    result = check_lm_004_net_quantity(product)
+
+    assert result.rule_id == "LM-004"
+    assert result.status == ComplianceStatus.PASS
+    assert result.detected_value == "200 g"
 
 
-def test_14_lm007_ambiguous_price():
-    p = ProductData(mrp=MrpData(value=None, raw_text="Special Offer 120"))
-    res = check_lm007_mrp(p)
-    assert res.status == RuleStatusEnum.REVIEW
+def test_lm004_quantity_present_unit_missing():
+    product = ProductData(
+        quantity=QuantityInfo(
+            value="200",
+            unit=None,
+            raw_text="Net Wt. 200",
+        )
+    )
+
+    result = check_lm_004_net_quantity(product)
+
+    assert result.rule_id == "LM-004"
+    assert result.status == ComplianceStatus.REVIEW
 
 
-def test_15_lm008_tax_inclusive_detected():
-    p = ProductData(mrp=MrpData(value="80", raw_text="MRP Rs. 80.00 (Incl. of all taxes)"))
-    res = check_lm008_mrp_tax_inclusive(p)
-    assert res.status == RuleStatusEnum.PASS
+def test_lm004_quantity_missing():
+    product = ProductData(
+        quantity=QuantityInfo(
+            value=None,
+            unit=None,
+            raw_text=None,
+        )
+    )
+
+    result = check_lm_004_net_quantity(product)
+
+    assert result.rule_id == "LM-004"
+    assert result.status == ComplianceStatus.FAIL
 
 
-def test_16_lm008_tax_inclusive_unclear():
-    p = ProductData(mrp=MrpData(value="120", inclusive_of_taxes=None, raw_text="MRP ₹120"))
-    res = check_lm008_mrp_tax_inclusive(p)
-    assert res.status == RuleStatusEnum.REVIEW
+def test_lm004_raw_quantity_only():
+    product = ProductData(
+        quantity=QuantityInfo(
+            value=None,
+            unit=None,
+            raw_text="Net Weight 200g",
+        )
+    )
+
+    result = check_lm_004_net_quantity(product)
+
+    assert result.rule_id == "LM-004"
+    assert result.status == ComplianceStatus.REVIEW
 
 
-def test_17_lm009_consumer_care_present():
-    p = ProductData(consumer_care=ConsumerCareData(phone="1800-123-4567"))
-    res = check_lm009_consumer_care(p)
-    assert res.status == RuleStatusEnum.PASS
+# ============================================================
+# LM-005 Manufacture / Packing Date
+# ============================================================
+
+def test_lm005_manufacture_date_present():
+    product = ProductData(
+        dates=DateInfo(
+            manufacture_date="08/2026",
+        )
+    )
+
+    result = check_lm_005_mfg_packing_date(product)
+
+    assert result.rule_id == "LM-005"
+    assert result.status == ComplianceStatus.PASS
+    assert "08/2026" in result.detected_value
 
 
-def test_18_lm009_consumer_care_missing():
-    p = ProductData(consumer_care=ConsumerCareData())
-    res = check_lm009_consumer_care(p)
-    assert res.status == RuleStatusEnum.FAIL
+def test_lm005_packing_date_present():
+    product = ProductData(
+        dates=DateInfo(
+            packing_date="08/2026",
+        )
+    )
+
+    result = check_lm_005_mfg_packing_date(product)
+
+    assert result.rule_id == "LM-005"
+    assert result.status == ComplianceStatus.PASS
+    assert "08/2026" in result.detected_value
 
 
-def test_19_demo_product_consistency():
-    compliant = get_demo_compliant_product()
-    c_results, c_status, c_score, _ = evaluate_product_compliance(compliant)
-    assert c_status == RuleStatusEnum.PASS or c_status == "COMPLIANT"
-    assert c_score == 100
+def test_lm005_dates_missing():
+    product = ProductData(
+        dates=DateInfo(
+            manufacture_date=None,
+            packing_date=None,
+        )
+    )
 
-    non_compliant = get_demo_non_compliant_product()
-    nc_results, nc_status, nc_score, _ = evaluate_product_compliance(non_compliant)
-    assert nc_status == "NON_COMPLIANT"
-    assert nc_score < 60
+    result = check_lm_005_mfg_packing_date(product)
+
+    assert result.rule_id == "LM-005"
+    assert result.status == ComplianceStatus.FAIL
 
 
-def test_20_country_summary_consistency():
-    p = ProductData(country_of_origin="India", import_status=ImportStatusEnum.DOMESTIC)
-    res = check_lm002_country_of_origin(p)
-    assert res.status == RuleStatusEnum.NA
-    assert "India" in res.detected_value
-    assert res.detected_value != "Not detected"
-    assert res.status != RuleStatusEnum.REVIEW
+# ============================================================
+# LM-006 Best Before / Use By
+# ============================================================
+
+def test_lm006_food_best_before_present():
+    product = ProductData(
+        category="Food",
+        dates=DateInfo(
+            best_before="6 months from packing",
+        ),
+    )
+
+    result = check_lm_006_best_before_use_by(product)
+
+    assert result.rule_id == "LM-006"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm006_food_best_before_missing():
+    product = ProductData(
+        category="Food",
+        dates=DateInfo(
+            best_before=None,
+            use_by=None,
+        ),
+    )
+
+    result = check_lm_006_best_before_use_by(product)
+
+    assert result.rule_id == "LM-006"
+    assert result.status == ComplianceStatus.FAIL
+
+
+def test_lm006_electronics_not_applicable():
+    product = ProductData(
+        category="Electronics",
+        dates=DateInfo(),
+    )
+
+    result = check_lm_006_best_before_use_by(product)
+
+    assert result.rule_id == "LM-006"
+    assert result.status == ComplianceStatus.NA
+
+
+def test_lm006_uncertain_category():
+    product = ProductData(
+        category="Other",
+        dates=DateInfo(),
+    )
+
+    result = check_lm_006_best_before_use_by(product)
+
+    assert result.rule_id == "LM-006"
+    assert result.status == ComplianceStatus.REVIEW
+
+
+def test_lm006_use_by_present():
+    product = ProductData(
+        category="Food",
+        dates=DateInfo(
+            use_by="31/12/2026",
+        ),
+    )
+
+    result = check_lm_006_best_before_use_by(product)
+
+    assert result.rule_id == "LM-006"
+    assert result.status == ComplianceStatus.PASS
+
+
+# ============================================================
+# LM-007 MRP
+# ============================================================
+
+def test_lm007_mrp_present():
+    product = ProductData(
+        mrp=MRPInfo(
+            value="80.00",
+            currency="INR",
+            raw_text="MRP Rs. 80.00",
+        )
+    )
+
+    result = check_lm_007_mrp(product)
+
+    assert result.rule_id == "LM-007"
+    assert result.status == ComplianceStatus.PASS
+    assert "80.00" in result.detected_value
+
+
+def test_lm007_mrp_missing():
+    product = ProductData(
+        mrp=MRPInfo(
+            value=None,
+            raw_text=None,
+        )
+    )
+
+    result = check_lm_007_mrp(product)
+
+    assert result.rule_id == "LM-007"
+    assert result.status == ComplianceStatus.FAIL
+
+
+def test_lm007_mrp_raw_text_only():
+    product = ProductData(
+        mrp=MRPInfo(
+            value=None,
+            raw_text="MRP Rs. 80",
+        )
+    )
+
+    result = check_lm_007_mrp(product)
+
+    assert result.rule_id == "LM-007"
+    assert result.status == ComplianceStatus.REVIEW
+
+
+# ============================================================
+# LM-008 MRP Tax Inclusive
+# ============================================================
+
+def test_lm008_tax_inclusive_true():
+    product = ProductData(
+        mrp=MRPInfo(
+            value="80",
+            inclusive_of_taxes=True,
+            raw_text="MRP Rs. 80 (Incl. of all taxes)",
+        )
+    )
+
+    result = check_lm_008_mrp_tax_inclusive(product)
+
+    assert result.rule_id == "LM-008"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm008_tax_inclusive_wording():
+    product = ProductData(
+        mrp=MRPInfo(
+            value="80",
+            inclusive_of_taxes=None,
+            raw_text="MRP Rs. 80 inclusive of all taxes",
+        )
+    )
+
+    result = check_lm_008_mrp_tax_inclusive(product)
+
+    assert result.rule_id == "LM-008"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm008_tax_inclusive_unclear():
+    product = ProductData(
+        mrp=MRPInfo(
+            value="80",
+            inclusive_of_taxes=None,
+            raw_text="MRP Rs. 80",
+        )
+    )
+
+    result = check_lm_008_mrp_tax_inclusive(product)
+
+    assert result.rule_id == "LM-008"
+    assert result.status == ComplianceStatus.REVIEW
+
+
+def test_lm008_mrp_missing():
+    product = ProductData(
+        mrp=MRPInfo(
+            value=None,
+            inclusive_of_taxes=None,
+            raw_text=None,
+        )
+    )
+
+    result = check_lm_008_mrp_tax_inclusive(product)
+
+    assert result.rule_id == "LM-008"
+    assert result.status == ComplianceStatus.NA
+
+
+# ============================================================
+# LM-009 Consumer Care
+# ============================================================
+
+def test_lm009_phone_present():
+    product = ProductData(
+        consumer_care=ConsumerCareInfo(
+            phone="1800-123-4567",
+        )
+    )
+
+    result = check_lm_009_consumer_care(product)
+
+    assert result.rule_id == "LM-009"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm009_email_present():
+    product = ProductData(
+        consumer_care=ConsumerCareInfo(
+            email="support@example.com",
+        )
+    )
+
+    result = check_lm_009_consumer_care(product)
+
+    assert result.rule_id == "LM-009"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm009_address_present():
+    product = ProductData(
+        consumer_care=ConsumerCareInfo(
+            address="Customer Care, 123 Main Road, Delhi",
+        )
+    )
+
+    result = check_lm_009_consumer_care(product)
+
+    assert result.rule_id == "LM-009"
+    assert result.status == ComplianceStatus.PASS
+
+
+def test_lm009_no_contact():
+    product = ProductData(
+        consumer_care=ConsumerCareInfo()
+    )
+
+    result = check_lm_009_consumer_care(product)
+
+    assert result.rule_id == "LM-009"
+    assert result.status == ComplianceStatus.FAIL
+
+
+# ============================================================
+# Rule Engine
+# ============================================================
+
+def test_rule_engine_compliant_product():
+    product = ProductData(
+        product_name="Tasty Biscuits",
+        brand_name="Tasty",
+        generic_name="Biscuits",
+        category="Food",
+
+        manufacturer=ManufacturerInfo(
+            role="Manufactured by",
+            name="XYZ Foods Pvt Ltd",
+            address="123 Main Road, Delhi, India - 110001",
+        ),
+
+        quantity=QuantityInfo(
+            value="200",
+            unit="g",
+            raw_text="Net Wt. 200g",
+        ),
+
+        mrp=MRPInfo(
+            value="80",
+            currency="INR",
+            inclusive_of_taxes=True,
+            raw_text="MRP Rs. 80 (Incl. of all taxes)",
+        ),
+
+        dates=DateInfo(
+            manufacture_date="08/2026",
+            best_before="6 months from packing",
+        ),
+
+        consumer_care=ConsumerCareInfo(
+            phone="1800-123-4567",
+            email="support@example.com",
+        ),
+
+        country_of_origin="India",
+    )
+
+    engine = ComplianceRuleEngine()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    assert len(results) == 9
+    assert summary.pass_count >= 1
+    assert summary.fail_count == 0
+    assert overall_status == OverallStatus.COMPLIANT
+    assert score >= 0
+    assert score <= 100
+
+
+def test_rule_engine_non_compliant_product():
+    product = ProductData(
+        product_name="Unknown Product",
+        category="Food",
+
+        manufacturer=ManufacturerInfo(),
+
+        quantity=QuantityInfo(),
+
+        mrp=MRPInfo(),
+
+        dates=DateInfo(),
+
+        consumer_care=ConsumerCareInfo(),
+    )
+
+    engine = ComplianceRuleEngine()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    assert len(results) == 9
+    assert summary.fail_count > 0
+    assert overall_status == OverallStatus.NON_COMPLIANT
+    assert score < 100
+
+
+def test_rule_engine_review_status():
+    product = ProductData(
+        product_name="Test Product",
+        brand_name="Test",
+        generic_name="Test",
+        category="Other",
+
+        manufacturer=ManufacturerInfo(
+            name="Test Company",
+            address=None,
+        ),
+
+        quantity=QuantityInfo(
+            value="100",
+            unit=None,
+        ),
+
+        mrp=MRPInfo(
+            value="100",
+            raw_text="MRP Rs. 100",
+        ),
+
+        dates=DateInfo(),
+
+        consumer_care=ConsumerCareInfo(
+            phone="1800-123-4567",
+        ),
+    )
+
+    engine = ComplianceRuleEngine()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    assert len(results) == 9
+    assert summary.review_count > 0
+    assert overall_status in (
+        OverallStatus.NEEDS_REVIEW,
+        OverallStatus.NON_COMPLIANT,
+    )
+    assert 0 <= score <= 100
+
+
+# ============================================================
+# Evidence Tests
+# ============================================================
+
+def test_evidence_is_used_for_manufacturer():
+    product = ProductData(
+        manufacturer=ManufacturerInfo(
+            name="XYZ Foods",
+            address="Delhi, India - 110001",
+        ),
+        raw_evidence=[
+            EvidenceItem(
+                field="manufacturer",
+                value="XYZ Foods",
+                evidence="Manufactured by XYZ Foods, Delhi, India - 110001",
+            )
+        ],
+    )
+
+    result = check_lm_001_manufacturer(product)
+
+    assert result.status == ComplianceStatus.PASS
+    assert "Manufactured by XYZ Foods" in result.evidence
+
+
+def test_evidence_is_used_for_quantity():
+    product = ProductData(
+        quantity=QuantityInfo(
+            value="500",
+            unit="g",
+            raw_text="Net Weight 500g",
+        ),
+        raw_evidence=[
+            EvidenceItem(
+                field="quantity",
+                value="500 g",
+                evidence="NET WT. 500g",
+            )
+        ],
+    )
+
+    result = check_lm_004_net_quantity(product)
+
+    assert result.status == ComplianceStatus.PASS
+    assert result.evidence == "NET WT. 500g"
+
+
+# ============================================================
+# Rule Count / IDs
+# ============================================================
+
+def test_all_nine_rules_are_registered():
+    engine = ComplianceRuleEngine()
+
+    product = ProductData()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    assert len(results) == 9
+
+    rule_ids = [result.rule_id for result in results]
+
+    assert rule_ids == [
+        "LM-001",
+        "LM-002",
+        "LM-003",
+        "LM-004",
+        "LM-005",
+        "LM-006",
+        "LM-007",
+        "LM-008",
+        "LM-009",
+    ]
+
+
+def test_score_is_between_zero_and_hundred():
+    product = ProductData()
+
+    engine = ComplianceRuleEngine()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    assert 0 <= score <= 100
+
+
+def test_summary_counts_match_results():
+    product = ProductData(
+        generic_name="Biscuits",
+        category="Food",
+        manufacturer=ManufacturerInfo(
+            name="ABC Foods",
+            address="Delhi, India - 110001",
+        ),
+        quantity=QuantityInfo(
+            value="100",
+            unit="g",
+        ),
+        mrp=MRPInfo(
+            value="50",
+            inclusive_of_taxes=True,
+            raw_text="MRP Rs. 50 Incl. of all taxes",
+        ),
+        dates=DateInfo(
+            manufacture_date="08/2026",
+            best_before="6 months",
+        ),
+        consumer_care=ConsumerCareInfo(
+            phone="1800-123-4567",
+        ),
+        country_of_origin="India",
+    )
+
+    engine = ComplianceRuleEngine()
+
+    results, summary, overall_status, score = engine.evaluate(product)
+
+    total = (
+        summary.pass_count
+        + summary.fail_count
+        + summary.review_count
+        + summary.na_count
+    )
+
+    assert total == len(results)

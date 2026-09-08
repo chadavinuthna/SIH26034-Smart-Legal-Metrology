@@ -1,70 +1,73 @@
-import json
+"""Inspection Storage Service: local JSON / in-memory persistence abstraction."""
 import os
-from typing import Dict, List, Optional
-from app.schemas import InspectionResponse
+import json
+import logging
+from typing import List, Optional, Dict
+from datetime import datetime
+from ..schemas import InspectionResponse
 
+logger = logging.getLogger(__name__)
 
-STORAGE_FILE = os.path.join(
-    os.path.dirname(__file__), "..", "..", "data", "inspections.json"
-)
+STORAGE_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "inspections_store.json")
 
 
 class StorageService:
-    def __init__(self):
-        self._inspections: Dict[str, Dict] = {}
+    """Manages inspection history with local JSON persistence and memory cache."""
+
+    def __init__(self, file_path: str = STORAGE_FILE):
+        self.file_path = file_path
+        self._cache: Dict[str, dict] = {}
         self._ensure_storage_dir()
         self._load_from_disk()
 
     def _ensure_storage_dir(self):
-        dir_path = os.path.dirname(STORAGE_FILE)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path, exist_ok=True)
+        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
 
     def _load_from_disk(self):
-        if os.path.exists(STORAGE_FILE):
+        if os.path.exists(self.file_path):
             try:
-                with open(STORAGE_FILE, "r", encoding="utf-8") as f:
-                    self._inspections = json.load(f)
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        self._cache = {item["inspection_id"]: item for item in data if "inspection_id" in item}
+                    elif isinstance(data, dict):
+                        self._cache = data
             except Exception as e:
-                print(f"Failed to load inspections from storage: {e}")
-                self._inspections = {}
+                logger.warning(f"Could not load inspections from disk: {e}")
+                self._cache = {}
 
     def _save_to_disk(self):
         try:
-            with open(STORAGE_FILE, "w", encoding="utf-8") as f:
-                json.dump(self._inspections, f, indent=2)
+            with open(self.file_path, "w", encoding="utf-8") as f:
+                json.dump(list(self._cache.values()), f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"Failed to save inspections to disk: {e}")
+            logger.error(f"Failed to persist inspections to disk: {e}")
 
-    def save_inspection(self, inspection: InspectionResponse):
+    def save(self, inspection: InspectionResponse) -> InspectionResponse:
         data = inspection.model_dump()
-        self._inspections[inspection.inspection_id] = data
+        self._cache[inspection.inspection_id] = data
         self._save_to_disk()
+        return inspection
 
-    def get_inspection(self, inspection_id: str) -> Optional[Dict]:
-        return self._inspections.get(inspection_id)
+    def get(self, inspection_id: str) -> Optional[InspectionResponse]:
+        item = self._cache.get(inspection_id)
+        if item:
+            try:
+                return InspectionResponse(**item)
+            except Exception as e:
+                logger.error(f"Error deserializing inspection {inspection_id}: {e}")
+                return None
+        return None
 
-    def get_all_inspections(self) -> List[Dict]:
-        # Return sorted by timestamp descending
-        items = list(self._inspections.values())
-        items.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-        return items
+    def list_all(self) -> List[dict]:
+        """Return all inspections sorted descending by creation timestamp."""
+        items = list(self._cache.values())
+        # Sort by created_at desc if available
+        return sorted(items, key=lambda x: x.get("created_at", ""), reverse=True)
 
-    def get_stats(self) -> Dict[str, int]:
-        total = len(self._inspections)
-        compliant = sum(1 for i in self._inspections.values() if i.get("status") == "COMPLIANT")
-        non_compliant = sum(
-            1 for i in self._inspections.values() if i.get("status") == "NON_COMPLIANT"
-        )
-        needs_review = sum(
-            1 for i in self._inspections.values() if i.get("status") == "NEEDS_REVIEW"
-        )
-        return {
-            "total": total,
-            "compliant": compliant,
-            "non_compliant": non_compliant,
-            "needs_review": needs_review,
-        }
+    def clear(self):
+        self._cache.clear()
+        self._save_to_disk()
 
 
 storage_service = StorageService()

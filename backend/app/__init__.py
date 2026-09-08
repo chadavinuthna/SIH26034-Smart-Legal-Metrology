@@ -1,1 +1,1 @@
-# app package
+"""App package root."""

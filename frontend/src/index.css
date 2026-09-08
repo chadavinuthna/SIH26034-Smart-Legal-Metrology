@@ -1,16 +1,34 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen;
+    @apply bg-[#F8FAFC] text-[#0F172A] min-h-screen font-sans;
   }
 }
 
-/* Custom Print Styles for Official Legal Metrology Report */
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Print Styles for Legal Metrology Report */
 @media print {
   body {
-    background-color: white !important;
-    color: black !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
   }
   .no-print {
     display: none !important;
@@ -18,9 +36,13 @@
   .print-only {
     display: block !important;
   }
-  .print-card {
-    border: 1px solid #cbd5e1 !important;
+  .page-break {
+    page-break-after: always;
+  }
+  .report-container {
+    padding: 0 !important;
+    margin: 0 !important;
     box-shadow: none !important;
-    break-inside: avoid;
+    border: none !important;
   }
 }

@@ -1,109 +1,200 @@
-# Smart Legal Metrology Package Compliance System (SIH26034 Prototype V1)
+# Smart Legal Metrology Package Compliance System (SIH26034)
 
-> **SIH26034 Prototype V1**: Functional prototype for Smart India Hackathon problem statement **SIH26034**.  
-> Screen packaged commodity labels for Legal Metrology compliance using AI label extraction + deterministic rule engine evaluation.
-
----
-
-## 🏛️ Core Architectural Principle
-
-```
-Package Image ──> AI Extraction (Gemini) ──> Structured ProductData ──> Deterministic Rule Engine ──> COMPLIANT / NON-COMPLIANT / NEEDS REVIEW
-```
-
-> **IMPORTANT**: AI EXTRACTS AND INTERPRETS. DETERMINISTIC RULES MAKE COMPLIANCE DECISIONS.
-> The AI Vision model extracts structured label declarations into a Pydantic schema (`ProductData`). A separate Python rule engine deterministically evaluates Legal Metrology rules (LM-001 to LM-009) to compute PASS/FAIL/REVIEW/NA statuses. The AI **never** directly decides legal status.
+> **Smart India Hackathon Problem Statement SIH26034**  
+> Functional Prototype V1: Automated packaged commodity label declaration extraction & deterministic compliance screening.
 
 ---
 
-## 📐 Architecture Diagram
+## 1. Executive Summary & Problem Context
+
+Packaged commodities sold across India must adhere to strict statutory disclosure standards under the **Legal Metrology Act, 2009** and the **Legal Metrology (Packaged Commodities) Rules, 2011**. 
+
+Enforcement officers routinely inspect physical retail packaging for mandatory declarations including manufacturer identification, common/generic name, net quantity in SI units, maximum retail price (MRP with tax clause), manufacturing/packing dates, best-before validity, and consumer grievance redressal channels.
+
+This system provides an automated inspection assistant:
+1. An enforcement officer uploads or photographs a package label.
+2. Multimodal AI (Gemini Vision) extracts visible label text and declarations into structured data.
+3. A **deterministic Legal Metrology rule engine** evaluates compliance against statutory rules (LM-001 through LM-009).
+4. The system renders an official compliance assessment with **PASS**, **FAIL**, **REVIEW**, and **N/A** statuses, audit evidence, Prototype Screening Score, and printable statutory reports.
+
+---
+
+## 2. Core Architectural Principle
 
 ```mermaid
-flowchart TD
-    A[Package Image Upload] --> B[FastAPI /api/inspection/analyze]
-    B --> C[Gemini AI Vision Extraction Service]
-    C -->|Structured JSON| D[Pydantic ProductData Validation]
-    D --> E[Deterministic Rule Engine LM-001 to LM-009]
-    E --> F[Rule Evaluation Results & Prototype Screening Score]
-    F --> G[JSON Storage Abstraction Layer]
-    F --> H[React Inspector Dashboard & Printable PDF Report]
+flowchart LR
+    A[Package Image] --> B[AI Vision Extraction\nGemini 3.6 Flash]
+    B --> C[Structured ProductData\nPydantic Schema]
+    C --> D[Deterministic Rule Engine\nLM-001 to LM-009]
+    D --> E[Compliance Assessment\nPASS / FAIL / REVIEW / NA]
+    E --> F[Statutory Audit Report\nPrint / Save as PDF]
+```
+
+> **CRITICAL ARCHITECTURAL BOUNDARY:**
+> - **AI EXTRACTS AND INTERPRETS**: The LLM reads visible text, identifies entity names, prices, dates, and units, and outputs structured JSON.
+> - **DETERMINISTIC RULES DECIDE COMPLIANCE**: The AI NEVER decides whether a package is "legal" or "compliant". Final compliance status and scores are computed purely by deterministic algorithmic logic.
+
+---
+
+## 3. Technology Stack
+
+### Frontend
+- **Framework**: React 18 + Vite
+- **Styling**: Tailwind CSS (Government inspection portal theme: Navy Blue `#0F2942`, Amber `#D97706` accents, Slate grays)
+- **Icons**: Lucide React
+- **Storage**: Client-side LocalStorage abstraction with server sync
+
+### Backend
+- **Framework**: Python 3.14 + FastAPI + Uvicorn
+- **Data Validation**: Pydantic v2
+- **Image Processing**: Pillow (PIL)
+- **AI SDK**: Google GenAI Python SDK (`google-genai`)
+- **Storage Layer**: Local JSON / Memory store (Designed for seamless drop-in replacement with PostgreSQL / Firebase)
+
+---
+
+## 4. Project Monorepo Structure
+
+```
+SIH26034/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── CheckCard.jsx           # Individual compliance check card
+│   │   │   ├── CheckDetailModal.jsx    # Verbatim evidence & rationale modal
+│   │   │   ├── ExtractedInfoTable.jsx  # Structured declaration table
+│   │   │   ├── Header.jsx              # Navigation header with actions
+│   │   │   ├── ImagePreviewCard.jsx    # Image preview & quality stats
+│   │   │   ├── ScoreMeter.jsx          # Circular Prototype Screening Score gauge
+│   │   │   ├── Sidebar.jsx             # Official government portal sidebar
+│   │   │   └── StatusBadge.jsx         # High-contrast PASS/FAIL/REVIEW/NA badges
+│   │   ├── pages/
+│   │   │   ├── Login.jsx               # Officer login + 1-click Demo Login
+│   │   │   ├── Dashboard.jsx           # Metrics, recent inspections, demo cards
+│   │   │   ├── NewInspection.jsx       # Upload dropzone, preview, category selector
+│   │   │   ├── AnalysisProgress.jsx    # 6-stage real-time processing pipeline
+│   │   │   ├── Results.jsx             # Compliance assessment & check matrix
+│   │   │   ├── History.jsx             # Chronological audit log & filter
+│   │   │   ├── Report.jsx              # Printable statutory compliance report
+│   │   │   └── Settings.jsx            # Rule catalog (LM-001 to LM-009)
+│   │   ├── services/
+│   │   │   ├── api.js                  # FastAPI backend client
+│   │   │   └── storage.js              # Local storage cache service
+│   │   ├── data/
+│   │   │   └── demoSamples.js          # Pre-configured compliant & non-compliant packs
+│   │   ├── App.jsx                     # Top-level application coordinator
+│   │   ├── main.jsx                    # React entrypoint
+│   │   └── index.css                   # Tailwind styles & print stylesheets
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── inspection.py           # REST endpoints for analysis & history
+│   │   ├── rules/
+│   │   │   ├── common_rules.py         # Statutory rules LM-001 to LM-009
+│   │   │   └── rule_engine.py          # Deterministic evaluation & scoring
+│   │   ├── services/
+│   │   │   ├── ai_service.py           # Gemini Vision structured extraction
+│   │   │   ├── compliance_service.py   # Inspection orchestrator & demo datasets
+│   │   │   └── storage_service.py      # Persistence abstraction
+│   │   ├── utils/
+│   │   │   └── image_utils.py          # Pillow format & quality validation
+│   │   ├── schemas.py                  # Pydantic data schemas
+│   │   └── main.py                     # FastAPI application & CORS
+│   ├── test_rules.py                   # Automated rule engine test suite
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── README.md
+└── .gitignore
 ```
 
 ---
 
-## 📜 Legal Metrology Compliance Rules Engine (LM-001 — LM-009)
+## 5. Statutory Compliance Rules (LM-001 to LM-009)
 
-| Rule ID | Rule Name | Evaluated Fields | Logic / Safeguard Behavior |
-|---|---|---|---|
-| **LM-001** | Manufacturer / Packer / Importer Details | `manufacturer.name`, `address` | PASS if name & address verified; FAIL if address missing; REVIEW if incomplete. |
-| **LM-002** | Country of Origin | `country_of_origin`, `is_imported` | PASS if imported & country declared; FAIL if imported & country missing; NA for domestic products; REVIEW if import status uncertain. |
-| **LM-003** | Generic Product Name | `generic_name`, `brand_name` | PASS if generic commodity name declared; REVIEW if brand found without explicit generic name; FAIL if unstated. |
-| **LM-004** | Net Quantity | `quantity.value`, `unit` | PASS if net quantity & standard unit (g, kg, ml, L, N) present; REVIEW if unit ambiguous; FAIL if missing. |
-| **LM-005** | Manufacture / Packing Date | `dates.manufacture_date`, `packing_date` | PASS if month & year declared; FAIL if missing. |
-| **LM-006** | Best Before / Use By | `dates.best_before`, `category` | Evaluates category applicability. PASS if declared; NA for non-perishables (electronics/hardware); FAIL if missing for perishables (Food/Cosmetics). |
-| **LM-007** | Maximum Retail Price (MRP) | `mrp.value`, `raw_text` | PASS if MRP value present; REVIEW if price detected without MRP text; FAIL if unstated. |
-| **LM-008** | MRP Tax-Inclusive Indication | `mrp.inclusive_of_taxes`, `raw_text` | Fuzzy regex matching for tax-inclusive phrasing ("Inclusive of all taxes", "incl. of all taxes"). REVIEW if image unclear. |
-| **LM-009** | Consumer Care Details | `consumer_care.phone`, `email`, `address` | PASS if at least one contact detail present; FAIL if absent. |
-
----
-
-## 🛠️ Technology Stack
-
-- **Frontend**: React + Vite + Tailwind CSS + Lucide Icons
-- **Backend**: Python 3.14 + FastAPI + Pydantic v2 + Pillow
-- **AI Vision Engine**: Google GenAI Python SDK (`google-genai`) with Gemini 2.5 Flash Vision API
-- **Storage Abstraction**: In-memory & local JSON abstraction (`inspections.json`)
+| Rule ID | Rule Name | Requirement | Determination Logic |
+| :--- | :--- | :--- | :--- |
+| **LM-001** | Manufacturer / Packer Details | Name and complete address | **PASS**: Name + Address verified.<br>**REVIEW**: Partial/ambiguous address.<br>**FAIL**: Information missing. |
+| **LM-002** | Country of Origin | Import origin declaration | **PASS**: Imported + origin declared OR domestic origin.<br>**FAIL**: Imported + origin missing.<br>**NA**: Clearly domestic manufacturing.<br>**REVIEW**: Import status uncertain. |
+| **LM-003** | Generic Commodity Name | Common identity of commodity | **PASS**: Generic name verified distinct from brand.<br>**REVIEW**: Generic name identical to brand.<br>**FAIL**: Missing. |
+| **LM-004** | Net Quantity in SI Units | Weight/volume/measure | **PASS**: Numeric value + standard SI unit (g, kg, ml, L, N).<br>**REVIEW**: Ambiguous unit.<br>**FAIL**: Missing. |
+| **LM-005** | Manufacture / Packing Date | Month & year of mfg/packing | **PASS**: Mfg or packing date/period detected.<br>**FAIL**: Missing. |
+| **LM-006** | Best Before / Use By Date | Expiry / validity period | **PASS**: Expiry date/duration declared.<br>**FAIL**: Missing for perishable/food categories.<br>**NA**: Non-perishable goods (hardware, electronics).<br>**REVIEW**: Category applicability uncertain. |
+| **LM-007** | Maximum Retail Price (MRP) | Retail price in INR (₹) | **PASS**: MRP amount detected.<br>**REVIEW**: Ambiguous price string.<br>**FAIL**: Missing. |
+| **LM-008** | MRP Tax-Inclusive Indication | Tax inclusivity wording | **PASS**: Evidence of 'Inclusive of all taxes' or equivalent wording detected.<br>**REVIEW**: MRP present but tax clause unverified.<br>**NA**: MRP absent. |
+| **LM-009** | Consumer Care Helpline | Grievance redressal contact | **PASS**: At least one consumer phone, email, or address detected.<br>**FAIL**: Grievance redressal details missing. |
 
 ---
 
-## 🚀 Setup & Running Instructions
+## 6. Scoring & Determination Logic
 
-### 1. Environment Variables Setup
+1. **Overall Determination**:
+   - **`NON_COMPLIANT`**: If **any** applicable rule results in `FAIL`.
+   - **`NEEDS_REVIEW`**: If **any** applicable rule results in `REVIEW` and there are **no** `FAIL` rules.
+   - **`COMPLIANT`**: If **all** applicable rules result in `PASS`.
 
-Create a `.env` file inside `backend/`:
+2. **Prototype Screening Score**:
+   - Only applicable rules are included in the denominator (`PASS` + `FAIL` + `REVIEW`).
+   - `PASS` = 1.0 point, `REVIEW` = 0.5 points, `FAIL` = 0.0 points.
+   - `NA` rules do **not** penalize or alter the score.
 
-```bash
-# backend/.env
-GEMINI_API_KEY=your_google_gemini_api_key_here
-PORT=8000
-HOST=0.0.0.0
-```
+---
 
-> **Note**: Demo Mode works out-of-the-box even without a `GEMINI_API_KEY` configured!
+## 7. Setup & Execution Instructions
 
-### 2. Backend Execution (FastAPI)
+### Prerequisites
+- Python 3.10+ (Tested on Python 3.14)
+- Node.js 18+ (Tested on Node v24)
+- npm 9+
 
+### Backend Setup
 ```bash
 cd backend
-python -m pip install -r requirements.txt
+
+# 1. Install Python dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment variables (optional for demo mode)
+copy .env.example .env
+
+# 3. Run automated rule engine verification
+python test_rules.py
+
+# 4. Start FastAPI server
 python -m uvicorn app.main:app --reload --port 8000
 ```
-- Health Check: `http://localhost:8000/api/inspection/health`
-- Interactive API Docs: `http://localhost:8000/docs`
+API Documentation will be available at: `http://localhost:8000/docs`
 
-### 3. Frontend Execution (React + Vite)
-
+### Frontend Setup
 ```bash
 cd frontend
+
+# 1. Install dependencies
 npm install
+
+# 2. Start Vite development server
 npm run dev
 ```
-- Open Inspector Portal: `http://localhost:5173`
+Open browser at: `http://localhost:5173/`
 
 ---
 
-## ⚡ Demo Mode (No API Key Required)
+## 8. Demo Mode (Zero API Key Setup Required)
 
-The system includes pre-loaded sample packages for immediate presentation and testing:
+The prototype is equipped with **instant demo evaluation** that functions 100% reliably even without internet access or a `GEMINI_API_KEY`:
 
-1. **Sample 1: Compliant Package (Biscuits)** → Produces `COMPLIANT` status with 100% Prototype Screening Score.
-2. **Sample 2: Non-Compliant Package (Spicy Snacks)** → Produces `NON-COMPLIANT` status with rule FAIL details.
-
-All demo samples route through the **SAME deterministic Rule Engine**:
-`Demo ProductData` → `Rule Engine` → `Rule Results`.
+1. Click **"Demo Login"** on the login screen.
+2. Select either of the pre-configured test scenarios:
+   - **Sample 1 (Compliant Biscuit Pack)**: Fully declared package &rarr; yields **COMPLIANT** (`100%` score).
+   - **Sample 2 (Non-Compliant Snack Pack)**: Defective package missing address, mfg date, and consumer care &rarr; yields **NON-COMPLIANT** (`39%` score).
+3. Both samples pass through the **exact same deterministic compliance rule engine** as live vision images.
 
 ---
 
-## ⚖️ Mandatory Legal Disclaimer
+## 9. Legal Disclaimer
 
-"Prototype screening result. Final regulatory determination should be verified by an authorized Legal Metrology officer and applicable current regulations."
+> **Statutory Disclaimer**: Prototype screening result. Final regulatory determination should be verified by an authorized Legal Metrology officer and applicable current regulations.

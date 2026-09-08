@@ -1,1 +1,1 @@
-# services package
+"""Services module."""

@@ -1,114 +1,115 @@
+"""Pydantic data schemas for Legal Metrology Package Compliance System."""
+from typing import Optional, List, Dict, Any
 from enum import Enum
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
-class RuleStatusEnum(str, Enum):
+class ComplianceStatus(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
     REVIEW = "REVIEW"
     NA = "NA"
 
 
-class OverallStatusEnum(str, Enum):
+class OverallStatus(str, Enum):
     COMPLIANT = "COMPLIANT"
     NON_COMPLIANT = "NON_COMPLIANT"
     NEEDS_REVIEW = "NEEDS_REVIEW"
 
 
-class ImportStatusEnum(str, Enum):
-    IMPORTED = "IMPORTED"
-    DOMESTIC = "DOMESTIC"
-    UNCERTAIN = "UNCERTAIN"
+class ManufacturerInfo(BaseModel):
+    role: Optional[str] = Field(default=None, description="Role e.g., 'Manufactured by', 'Packed by', 'Imported by'")
+    name: Optional[str] = Field(default=None, description="Company / Business entity name")
+    address: Optional[str] = Field(default=None, description="Complete registered/operational address")
 
 
-class DateApplicabilityEnum(str, Enum):
-    APPLICABLE = "APPLICABLE"
-    NOT_APPLICABLE = "NOT_APPLICABLE"
-    UNCERTAIN = "UNCERTAIN"
+class QuantityInfo(BaseModel):
+    value: Optional[str] = Field(default=None, description="Numerical net quantity e.g., '200', '1.5'")
+    unit: Optional[str] = Field(default=None, description="Standardized SI unit e.g., 'g', 'kg', 'ml', 'l', 'N'")
+    raw_text: Optional[str] = Field(default=None, description="Verbatim text from label e.g., 'Net Wt. 200g'")
 
 
-class ManufacturerData(BaseModel):
-    role: Optional[str] = None  # Manufacturer / Packer / Importer
-    name: Optional[str] = None
-    address: Optional[str] = None
+class MRPInfo(BaseModel):
+    value: Optional[str] = Field(default=None, description="Numerical price value e.g., '80.00' or '80'")
+    currency: str = Field(default="INR", description="Currency symbol or code")
+    inclusive_of_taxes: Optional[bool] = Field(default=None, description="Whether tax inclusive phrase is present")
+    raw_text: Optional[str] = Field(default=None, description="Verbatim text from label e.g., 'MRP Rs. 80.00 (Incl. of all taxes)'")
 
 
-class QuantityData(BaseModel):
+class DateInfo(BaseModel):
+    manufacture_date: Optional[str] = Field(default=None, description="Date or month/year of manufacture")
+    packing_date: Optional[str] = Field(default=None, description="Date or month/year of packing")
+    best_before: Optional[str] = Field(default=None, description="Best before duration e.g., '6 months from pkd'")
+    use_by: Optional[str] = Field(default=None, description="Expiry / use-by date")
+
+
+class ConsumerCareInfo(BaseModel):
+    phone: Optional[str] = Field(default=None, description="Toll-free / customer care phone number")
+    email: Optional[str] = Field(default=None, description="Customer care email address")
+    address: Optional[str] = Field(default=None, description="Consumer care postal address or website")
+
+
+class EvidenceItem(BaseModel):
+    field: str
     value: Optional[str] = None
-    unit: Optional[str] = None
-    raw_text: Optional[str] = None
-
-
-class MrpData(BaseModel):
-    value: Optional[str] = None
-    currency: str = "INR"
-    inclusive_of_taxes: Optional[bool] = None  # None if uncertain
-    raw_text: Optional[str] = None
-
-
-class DatesData(BaseModel):
-    manufacture_date: Optional[str] = None
-    packing_date: Optional[str] = None
-    best_before: Optional[str] = None
-    use_by: Optional[str] = None
-
-
-class ConsumerCareData(BaseModel):
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    address: Optional[str] = None
+    evidence: str
 
 
 class ProductData(BaseModel):
-    product_name: Optional[str] = None
-    brand_name: Optional[str] = None
-    generic_name: Optional[str] = None
-    category: Optional[str] = None
-
-    manufacturer: ManufacturerData = Field(default_factory=ManufacturerData)
-    quantity: QuantityData = Field(default_factory=QuantityData)
-    mrp: MrpData = Field(default_factory=MrpData)
-    dates: DatesData = Field(default_factory=DatesData)
-    consumer_care: ConsumerCareData = Field(default_factory=ConsumerCareData)
-
-    country_of_origin: Optional[str] = None
-    import_status: ImportStatusEnum = ImportStatusEnum.UNCERTAIN
-    is_imported: Optional[bool] = None  # Legacy indicator maintained for compatibility
-    date_applicability: DateApplicabilityEnum = DateApplicabilityEnum.UNCERTAIN
-    package_type: Optional[str] = "normal"
-
-    raw_evidence: List[str] = Field(default_factory=list)
+    """Structured container extracted by AI from package label."""
+    product_name: Optional[str] = Field(default=None, description="Commercial / advertised product name")
+    brand_name: Optional[str] = Field(default=None, description="Brand name / trademark")
+    generic_name: Optional[str] = Field(default=None, description="Common / generic name of the commodity")
+    category: Optional[str] = Field(default="Other", description="Product category e.g., Food, Cosmetics, Household, Electronics")
+    manufacturer: Optional[ManufacturerInfo] = Field(default_factory=ManufacturerInfo)
+    quantity: Optional[QuantityInfo] = Field(default_factory=QuantityInfo)
+    mrp: Optional[MRPInfo] = Field(default_factory=MRPInfo)
+    dates: Optional[DateInfo] = Field(default_factory=DateInfo)
+    consumer_care: Optional[ConsumerCareInfo] = Field(default_factory=ConsumerCareInfo)
+    country_of_origin: Optional[str] = Field(default=None, description="Country of manufacture / origin")
+    package_type: Optional[str] = Field(default="normal", description="Package type e.g., normal, combo, wholesale")
+    raw_evidence: List[EvidenceItem] = Field(default_factory=list, description="Verbatim evidence snippets for auditability")
 
 
 class RuleResult(BaseModel):
+    """Result of an individual deterministic compliance check."""
     rule_id: str
     rule_name: str
     field: str
-    status: RuleStatusEnum
-    detected_value: Optional[str] = "Not detected"
-    evidence: str = "Evidence not available."
+    status: ComplianceStatus
+    detected_value: Optional[str] = None
+    evidence: Optional[str] = None
     reason: str
     recommendation: Optional[str] = None
 
 
 class InspectionSummary(BaseModel):
-    pass_count: int = 0
-    fail_count: int = 0
-    review_count: int = 0
-    na_count: int = 0
+    pass_count: int = Field(alias="pass", default=0)
+    fail_count: int = Field(alias="fail", default=0)
+    review_count: int = Field(alias="review", default=0)
+    na_count: int = Field(alias="na", default=0)
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class ImageQualityInfo(BaseModel):
+    width: int
+    height: int
+    format: str
+    file_size_kb: float
+    quality_label: str
+    text_visibility: str
 
 
 class InspectionResponse(BaseModel):
+    """Full inspection response payload."""
     inspection_id: str
-    status: OverallStatusEnum
-    score: int = Field(description="Prototype Screening Score percentage (0-100)")
+    status: OverallStatus
+    score: int = Field(description="Prototype Compliance Score (0-100)")
+    category: str
     product: ProductData
     checks: List[RuleResult]
     summary: InspectionSummary
-    timestamp: str
+    image_metadata: Optional[ImageQualityInfo] = None
+    created_at: str
     is_demo: bool = False
-    disclaimer: str = (
-        "Prototype screening result. Final regulatory determination should be verified "
-        "by an authorized Legal Metrology officer and applicable current regulations."
-    )
