@@ -1,4 +1,5 @@
 import io
+import os
 import time
 from datetime import datetime
 import logging
@@ -64,22 +65,36 @@ def run_inspection(
             raise ValueError(f"Invalid or corrupted image format: {e}")
         pillow_time_ms = (time.time() - t_pillow_start) * 1000.0
 
-        # Step 1b: PaddleOCR extraction + deterministic parsing
-        logger.info("Executing real PaddleOCR extraction on uploaded image...")
-        t_ocr_start = time.time()
-        product_data = paddle_ocr_service.extract_product_data(
-            image=pil_image,
-            category_hint=category_hint,
-        )
-        ocr_time_ms = (time.time() - t_ocr_start) * 1000.0
-        sub_timings = getattr(paddle_ocr_service, "last_timings", {}) or {}
+        # Step 1b: PaddleOCR extraction + deterministic parsing (or Gemini fallback if PaddleOCR unavailable)
+        if paddle_ocr_service.is_available():
+            logger.info("Executing real PaddleOCR extraction on uploaded image...")
+            t_ocr_start = time.time()
+            product_data = paddle_ocr_service.extract_product_data(
+                image=pil_image,
+                category_hint=category_hint,
+            )
+            ocr_time_ms = (time.time() - t_ocr_start) * 1000.0
+            sub_timings = getattr(paddle_ocr_service, "last_timings", {}) or {}
 
-        # Step 1c: Optional Gemini Disambiguation (only if GEMINI_API_KEY is present and fields are ambiguous)
-        product_data, llm_time_ms = disambiguate_ambiguous_fields(
-            image_bytes=image_bytes,
-            product_data=product_data,
-            category_hint=category_hint,
-        )
+            # Step 1c: Optional Gemini Disambiguation (only if GEMINI_API_KEY is present and fields are ambiguous)
+            product_data, llm_time_ms = disambiguate_ambiguous_fields(
+                image_bytes=image_bytes,
+                product_data=product_data,
+                category_hint=category_hint,
+            )
+        elif os.environ.get("GEMINI_API_KEY", "").strip() and os.environ.get("GEMINI_API_KEY", "").strip() != "your_gemini_api_key_here":
+            logger.info("PaddleOCR unavailable; falling back to Gemini Vision API extraction...")
+            t_ocr_start = time.time()
+            product_data = extract_product_data_from_image(
+                image_bytes=image_bytes,
+                category_hint=category_hint,
+            )
+            ocr_time_ms = (time.time() - t_ocr_start) * 1000.0
+        else:
+            raise RuntimeError(
+                "OCR pipeline unavailable: Neither 'paddleocr' is installed nor is 'GEMINI_API_KEY' configured. "
+                "Please run 'pip install -r requirements.txt' or provide a valid GEMINI_API_KEY."
+            )
         is_demo_flag = False
     else:
         # Step 1d: Demo sample fallback

@@ -30,12 +30,35 @@ def evaluate_product_compliance(
     if db is None:
         db = SessionLocal()
 
-    rules = (
-        db.query(Rule)
-        .filter(Rule.enabled == True)
-        .order_by(Rule.rule_id)
-        .all()
-    )
+    try:
+        rules = (
+            db.query(Rule)
+            .filter(Rule.enabled == True)
+            .order_by(Rule.rule_id)
+            .all()
+        )
+        if not rules:
+            from app.database.init_db import init_db
+            from app.database.seed_rules import seed_rules
+            init_db()
+            seed_rules()
+            rules = (
+                db.query(Rule)
+                .filter(Rule.enabled == True)
+                .order_by(Rule.rule_id)
+                .all()
+            )
+    except Exception:
+        from app.database.init_db import init_db
+        from app.database.seed_rules import seed_rules
+        init_db()
+        seed_rules()
+        rules = (
+            db.query(Rule)
+            .filter(Rule.enabled == True)
+            .order_by(Rule.rule_id)
+            .all()
+        )
 
     results: List[RuleResult] = []
 

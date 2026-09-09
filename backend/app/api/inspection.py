@@ -1,3 +1,5 @@
+import os
+import logging
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
@@ -6,6 +8,8 @@ from app.services.compliance_service import run_inspection
 from app.services.storage_service import storage_service
 from sqlalchemy.orm import Session
 from app.database.database import get_db
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/inspection", tags=["Inspection"])
 
@@ -29,9 +33,12 @@ async def analyze_package(
     """
     image_bytes = None
     if image and image.filename:
-        # Validate MIME type
-        allowed_types = ["image/jpeg", "image/png", "image/webp", "image/jpg", "image/bmp"]
-        if image.content_type not in allowed_types:
+        # Validate MIME type and file extension
+        content_type = (image.content_type or "").split(";")[0].strip().lower()
+        allowed_types = {"image/jpeg", "image/png", "image/webp", "image/jpg", "image/bmp"}
+        filename_ext = os.path.splitext(image.filename)[1].lower()
+        allowed_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+        if content_type not in allowed_types and filename_ext not in allowed_exts:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unsupported image format. Please upload JPG, PNG, WEBP, or BMP format.",
@@ -54,11 +61,19 @@ async def analyze_package(
             db=db,
         )
         return inspection
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.error(f"Image validation error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
     except Exception as e:
-        print(f"Error during inspection processing: {e}")
+        logger.exception(f"Error during inspection processing: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to analyze this package image. Please upload a clearer package label image.",
+            detail=f"Inspection pipeline error: {str(e)}",
         )
 
 

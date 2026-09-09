@@ -70,6 +70,10 @@ class ConsumerCareData(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
+class EvidenceItem(BaseModel):
+    field: str
+    value: Optional[str] = None
+    evidence: str
 
 
 class ProductData(BaseModel):
@@ -154,8 +158,4 @@ ComplianceStatus = RuleStatusEnum
 OverallStatus = OverallStatusEnum
 
 
-class EvidenceItem(BaseModel):
-    field: str
-    value: Optional[str] = None
-    evidence: str
 
