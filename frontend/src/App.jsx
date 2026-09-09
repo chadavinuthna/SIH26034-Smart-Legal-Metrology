@@ -88,7 +88,7 @@ export default function App() {
     clearOfficerSession();
   };
 
-  const handleStartAnalysis = async ({ file, category, demoSampleId, previewUrl }) => {
+  const handleStartAnalysis = async ({ files, category, demoSampleId, previewUrl }) => {
     setIsAnalyzing(true);
     setActiveTab('analysis');
     setAnalyzingImagePreview(previewUrl);
@@ -102,7 +102,7 @@ export default function App() {
         result = await demoAnalyzePackage(demoSampleId);
       } else {
         // Run live package analysis (image -> Gemini AI extraction -> Rule engine)
-        result = await analyzePackage(file, category);
+        result = await analyzePackage(files, category);
       }
 
       // Attach local preview URL if not present
@@ -132,7 +132,7 @@ export default function App() {
     setActiveTab('new-inspection');
     // Pre-populate and run
     handleStartAnalysis({
-      file: null,
+      files: [],
       category: 'Food',
       demoSampleId: demoId,
       previewUrl:

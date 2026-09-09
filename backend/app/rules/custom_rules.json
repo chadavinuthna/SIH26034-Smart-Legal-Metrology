@@ -1,0 +1,32 @@
+[
+  {
+    "rule_id": "LM-010",
+    "rule_name": "Batch Number",
+    "description": "Package must contain a batch or lot number.",
+    "category": "Food",
+    "field": "custom_fields.batch_number",
+    "operator": "REQUIRED",
+    "expected_value": null,
+    "failure_message": "Batch number is missing.",
+    "recommendation": "Ensure the package displays a valid batch or lot number.",
+    "status": "ACTIVE",
+    "created_at": "2026-09-09T15:33:49.068356",
+    "updated_at": "2026-09-09T15:47:20.859108",
+    "is_custom": true
+  },
+  {
+    "rule_id": "LM-011",
+    "rule_name": "Veg/Non-Veg Mark",
+    "description": "Food packages must display a vegetarian or non-vegetarian identification mark.",
+    "category": "FOOD",
+    "field": "custom_fields.veg_nonveg",
+    "operator": "REQUIRED",
+    "expected_value": null,
+    "failure_message": "Veg/Non-Veg identification mark is missing.",
+    "recommendation": "Ensure the appropriate food identification mark is displayed on the package.",
+    "status": "ACTIVE",
+    "created_at": "2026-09-09T16:04:13.967971",
+    "updated_at": "2026-09-09T16:04:13.967971",
+    "is_custom": true
+  }
+]

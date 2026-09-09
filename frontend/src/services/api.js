@@ -1,14 +1,15 @@
 /**
  * API Service for communicating with the FastAPI Legal Metrology Backend.
  */
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const API_BASE = '/api';
 
-export async function analyzePackage(imageFile, category = 'Auto Detect', demoSampleId = null) {
+export async function analyzePackage(imageFiles, category = 'Auto Detect', demoSampleId = null) {
   const formData = new FormData();
-  if (imageFile) {
-    formData.append('image', imageFile);
-  }
+  const files = Array.isArray(imageFiles) ? imageFiles : (imageFiles ? [imageFiles] : []);
+  files.forEach((file) => formData.append('images', file));
   formData.append('category', category || 'Auto Detect');
   if (demoSampleId) {
     formData.append('demo_sample', demoSampleId);
@@ -86,4 +87,94 @@ export async function getSystemConfig() {
     storage_mode: 'local_json_memory',
     prototype_version: '1.0.0-SIH26034',
   };
+}
+
+export async function getComplianceRules() {
+  const response = await fetch(`${API_BASE}/inspection/rules`);
+
+  if (!response.ok) {
+    throw new Error('Failed to load compliance rules.');
+  }
+
+  return await response.json();
+}
+
+export async function addComplianceRule(rule) {
+  const response = await fetch(`${API_BASE}/inspection/rules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(rule),
+  });
+
+  if (!response.ok) {
+    let errorMsg = 'Failed to add compliance rule.';
+    try {
+      const errData = await response.json();
+      errorMsg = errData.detail || errorMsg;
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  return await response.json();
+}
+
+export async function updateComplianceRule(ruleId, rule) {
+  const response = await fetch(
+    `${API_BASE}/inspection/rules/${encodeURIComponent(ruleId)}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(rule),
+    }
+  );
+
+  if (!response.ok) {
+    let errorMsg = 'Failed to update compliance rule.';
+    try {
+      const errData = await response.json();
+      errorMsg = errData.detail || errorMsg;
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  return await response.json();
+}
+
+export async function disableComplianceRule(ruleId) {
+  const response = await fetch(
+    `${API_BASE}/inspection/rules/${encodeURIComponent(ruleId)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+
+  if (!response.ok) {
+    let errorMsg = 'Failed to disable compliance rule.';
+    try {
+      const errData = await response.json();
+      errorMsg = errData.detail || errorMsg;
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  return await response.json();
+}
+
+
+
+export async function loginUser(userId, password) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, password: password }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Invalid user ID or password.");
+  }
+  return response.json();
 }

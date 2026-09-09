@@ -57,6 +57,7 @@ export default function Results({
     checks = [],
     summary = {},
     image_metadata,
+    annotated_image_url,
     created_at,
     is_demo,
   } = inspection;
@@ -243,6 +244,7 @@ export default function Results({
                 <div className="w-full h-56 bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200">
                   <img
                     src={
+                      (annotated_image_url ? 'http://localhost:8000' + annotated_image_url : null) ||
                       product.image_url ||
                       (is_demo ? (product.product_name?.includes('Butter') ? 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="%230F2942"/><text x="50" y="80" fill="%23FFF" font-size="28">ROYAL TREATS</text><text x="50" y="130" fill="%23FFF" font-size="20">Butter Delight Biscuits</text><text x="50" y="200" fill="%23FCD34D" font-size="16">Net Wt: 200g | MRP: Rs. 80.00 (Incl taxes)</text><text x="50" y="250" fill="%23FFF" font-size="14">Mfg: 07/2026 | Best Before: 6 mos</text><text x="50" y="300" fill="%23CBD5E1" font-size="12">ABC Foods, Hyderabad - 500076</text></svg>' : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="%237F1D1D"/><text x="50" y="80" fill="%23FFF" font-size="28">CRUNCHY BITES</text><text x="50" y="130" fill="%23FECACA" font-size="18">Price: Rs. 120 | Net: 500g</text><text x="50" y="200" fill="%23FCA5A5" font-size="14">[MISSING ADDRESS, MFG DATE &amp; CARE]</text></svg>') : null) ||
                       '/package_placeholder.png'

@@ -1,12 +1,16 @@
 """FastAPI Main Entry Point for Smart Legal Metrology Package Compliance System (SIH26034)."""
 import os
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from .api.inspection import router as inspection_router
+from .api.auth import router as auth_router
+
+os.makedirs("data", exist_ok=True)
 
 app = FastAPI(
     title="Smart Legal Metrology Package Compliance API",
@@ -27,7 +31,10 @@ app.add_middleware(
 )
 
 # Mount Routers
+app.mount("/data", StaticFiles(directory="data"), name="data")
+
 app.include_router(inspection_router)
+app.include_router(auth_router)
 
 
 @app.get("/api/health")

@@ -56,7 +56,7 @@ class EvidenceItem(BaseModel):
 
 
 class ProductData(BaseModel):
-    """Structured container extracted by AI from package label."""
+    """Structured container extracted from package label."""
     product_name: Optional[str] = Field(default=None, description="Commercial / advertised product name")
     brand_name: Optional[str] = Field(default=None, description="Brand name / trademark")
     generic_name: Optional[str] = Field(default=None, description="Common / generic name of the commodity")
@@ -68,6 +68,10 @@ class ProductData(BaseModel):
     consumer_care: Optional[ConsumerCareInfo] = Field(default_factory=ConsumerCareInfo)
     country_of_origin: Optional[str] = Field(default=None, description="Country of manufacture / origin")
     package_type: Optional[str] = Field(default="normal", description="Package type e.g., normal, combo, wholesale")
+    custom_fields: Dict[str, Optional[str]] = Field(
+        default_factory=dict,
+        description="Additional fields extracted from the package for user-defined compliance rules",
+    )
     raw_evidence: List[EvidenceItem] = Field(default_factory=list, description="Verbatim evidence snippets for auditability")
 
 
@@ -79,6 +83,7 @@ class RuleResult(BaseModel):
     status: ComplianceStatus
     detected_value: Optional[str] = None
     evidence: Optional[str] = None
+    bbox: Optional[Dict[str, int]] = None
     reason: str
     recommendation: Optional[str] = None
 
@@ -111,5 +116,6 @@ class InspectionResponse(BaseModel):
     checks: List[RuleResult]
     summary: InspectionSummary
     image_metadata: Optional[ImageQualityInfo] = None
+    annotated_image_url: Optional[str] = None
     created_at: str
     is_demo: bool = False
