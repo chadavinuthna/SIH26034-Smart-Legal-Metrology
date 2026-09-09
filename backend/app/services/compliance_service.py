@@ -13,6 +13,7 @@ from app.services.ai_service import (
     disambiguate_ambiguous_fields,
 )
 from app.services.paddle_ocr_service import paddle_ocr_service
+from app.services.font_size_service import screen_font_sizes
 from app.rules.rule_engine import evaluate_product_compliance
 from app.services.storage_service import storage_service
 
@@ -128,6 +129,11 @@ def run_inspection(
         "llm_time_ms": round(llm_time_ms, 2),
     }
 
+    # Prototype advisory font size screening (strictly decoupled from statutory compliance scoring)
+    raw_ocr = getattr(paddle_ocr_service, "last_raw_result", None)
+    ocr_lines = raw_ocr.lines if raw_ocr else []
+    font_screening = screen_font_sizes(product=product_data, ocr_lines=ocr_lines)
+
     response = InspectionResponse(
         inspection_id=inspection_id,
         status=status,
@@ -139,6 +145,7 @@ def run_inspection(
         is_demo=is_demo_flag,
         execution_time_ms=round(total_time_ms, 2),
         timings=timings_dict,
+        font_size_screening=font_screening,
     )
 
     # 4. Save to storage

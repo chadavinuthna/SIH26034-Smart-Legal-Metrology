@@ -125,6 +125,21 @@ class ReportData(BaseModel):
     updated_at: Optional[str] = None
 
 
+class DeclarationFontScreening(BaseModel):
+    field: str
+    detected_text: Optional[str] = None
+    box_height_px: Optional[float] = None
+    status: str = "REVIEW"  # "PASS" or "REVIEW"
+    message: str
+
+
+class FontSizeScreeningResult(BaseModel):
+    threshold_px: float = 14.0
+    declarations: List[DeclarationFontScreening] = Field(default_factory=list)
+    overall_screening_status: str = "PASS"  # "PASS" or "REVIEW"
+    summary: Optional[str] = None
+
+
 class InspectionResponse(BaseModel):
     inspection_id: str
     status: OverallStatusEnum
@@ -142,6 +157,7 @@ class InspectionResponse(BaseModel):
     execution_time_ms: Optional[float] = None
     timings: Optional[Dict[str, Any]] = None
     image_metadata: Optional[ImageQualityInfo] = None
+    font_size_screening: Optional[FontSizeScreeningResult] = None
 
 
 # Backward compatibility aliases
@@ -158,4 +174,6 @@ class EvidenceItem(BaseModel):
     field: str
     value: Optional[str] = None
     evidence: str
+    confidence: Optional[float] = None
+    box_height_px: Optional[float] = None
 

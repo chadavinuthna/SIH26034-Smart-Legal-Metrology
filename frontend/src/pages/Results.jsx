@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   ListFilter,
   ArrowLeft,
+  Type,
 } from "lucide-react";
 
 export default function Results({ inspection, onNewInspection, onViewReport, onBackToDashboard }) {
@@ -24,12 +25,46 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
 
   if (!inspection) return null;
 
-  const { status, score, product, checks, summary, is_demo, inspection_id, timestamp, disclaimer } = inspection;
+  const {
+    status,
+    score,
+    product,
+    checks,
+    summary,
+    is_demo,
+    inspection_id,
+    timestamp,
+    disclaimer,
+    font_size_screening,
+  } = inspection;
 
   const filteredChecks = (checks || []).filter((check) => {
     if (filterStatus === "ALL") return true;
     return check.status === filterStatus;
   });
+
+  // Human-readable labels for mandatory declaration fields in font size screening
+  const formatFieldName = (field) => {
+    switch (field) {
+      case "net_quantity":
+        return "Net Quantity";
+      case "mrp":
+        return "Maximum Retail Price (MRP)";
+      case "manufacturer":
+        return "Manufacturer / Packer";
+      case "dates":
+        return "Date Declarations";
+      case "consumer_care":
+        return "Consumer Care Details";
+      case "country_of_origin":
+        return "Country of Origin";
+      default:
+        return field
+          .split("_")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+    }
+  };
 
   // Single Source of Truth: Format Country of Origin display strictly from ProductData
   const formatCountryDisplay = () => {
@@ -165,6 +200,117 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
           <span className="text-lg font-black text-slate-600">{summary?.na_count || 0}</span>
         </div>
       </div>
+
+      {/* Font Size Screening Section (Advisory Prototype Warning) */}
+      {font_size_screening && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-md p-6 space-y-4">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200/60 shrink-0">
+                <Type className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                    Font Size Screening
+                  </h3>
+                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                    Advisory Screening
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium">
+                  Estimated character/box height from OCR bounding boxes • Screening threshold:{" "}
+                  <span className="font-bold text-slate-700">{font_size_screening.threshold_px || 14}px</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Overall Status Badge */}
+            <div className="shrink-0">
+              {font_size_screening.overall_screening_status === "PASS" ? (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-black shadow-2xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Font size appears OK</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-black shadow-2xs">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Font size needs verification</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Declarations Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+            {(font_size_screening.declarations || []).map((decl) => {
+              const isPass = decl.status === "PASS";
+              return (
+                <div
+                  key={decl.field}
+                  className={`rounded-xl border p-4 space-y-2.5 transition-all ${
+                    isPass
+                      ? "bg-slate-50/60 border-slate-200/80 hover:border-emerald-200"
+                      : "bg-amber-50/40 border-amber-200 hover:border-amber-300 shadow-2xs"
+                  }`}
+                >
+                  {/* Field Name & Status Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-900 truncate">
+                      {formatFieldName(decl.field)}
+                    </span>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider border shrink-0 ${
+                        isPass
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          : "bg-amber-100 text-amber-900 border-amber-300"
+                      }`}
+                    >
+                      {decl.status}
+                    </span>
+                  </div>
+
+                  {/* Height & Detected Text */}
+                  <div className="space-y-1 text-xs">
+                    <div className="flex items-center justify-between gap-2 text-slate-600">
+                      <span className="text-slate-400 font-medium">Detected Height:</span>
+                      <span className="font-mono font-black text-slate-800">
+                        {decl.box_height_px != null ? `${decl.box_height_px} px` : "Unmatched"}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-2 text-slate-600">
+                      <span className="text-slate-400 font-medium shrink-0">Text:</span>
+                      <span
+                        className="font-mono text-[11px] text-slate-800 truncate text-right font-medium max-w-[180px]"
+                        title={decl.detected_text || "Not detected"}
+                      >
+                        {decl.detected_text || "Not detected"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Advisory Message */}
+                  <div
+                    className={`text-[11px] font-medium leading-relaxed pt-2 border-t ${
+                      isPass
+                        ? "border-slate-100 text-emerald-700 flex items-start gap-1.5"
+                        : "border-amber-100 text-amber-800 flex items-start gap-1.5"
+                    }`}
+                  >
+                    {isPass ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    )}
+                    <span>{decl.message}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Two Column Layout: Image Left, Checks/Data Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
