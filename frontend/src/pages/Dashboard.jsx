@@ -14,7 +14,8 @@ import {
   Search,
 } from "lucide-react";
 
-export default function Dashboard({ onStartNewInspection, onViewInspectionResult }) {
+export default function Dashboard({ currentUser, onStartNewInspection, onViewInspectionResult }) {
+  const isManufacturer = currentUser?.role === "MANUFACTURER";
   const [inspections, setInspections] = useState([]);
   const [stats, setStats] = useState({ total: 0, compliant: 0, non_compliant: 0, needs_review: 0 });
 
@@ -41,23 +42,39 @@ export default function Dashboard({ onStartNewInspection, onViewInspectionResult
   return (
     <div className="space-y-8 pb-10">
       {/* Top Banner Action */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-800">
+      <div className={`rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 border ${
+        isManufacturer
+          ? "bg-gradient-to-r from-slate-900 via-amber-950/60 to-slate-900 border-amber-900/40"
+          : "bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border-slate-800"
+      }`}>
         <div className="space-y-2">
-          <span className="px-3 py-1 bg-amber-500/20 text-amber-300 font-bold text-xs rounded-full border border-amber-500/30">
-            SIH26034 Prototype V1
+          <span className={`px-3 py-1 font-bold text-xs rounded-full border ${
+            isManufacturer
+              ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+              : "bg-blue-500/20 text-blue-300 border-blue-500/30"
+          }`}>
+            {isManufacturer ? "Manufacturer Self-Audit" : "SIH26034 Prototype V1"}
           </span>
-          <h2 className="text-2xl font-black tracking-tight">Packaged Commodity Compliance Screening</h2>
+          <h2 className="text-2xl font-black tracking-tight">
+            {isManufacturer ? "Packaged Commodity Pre-Market Screening" : "Packaged Commodity Compliance Screening"}
+          </h2>
           <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-            AI-assisted label extraction with deterministic Legal Metrology Act rule enforcement. Upload package images to screen for mandatory declarations.
+            {isManufacturer
+              ? "Self-audit and compliance validation before commercial batch distribution under Legal Metrology Act rules. Screen package labels to catch missing or non-compliant declarations early."
+              : "AI-assisted label extraction with deterministic Legal Metrology Act rule enforcement. Upload package images to screen for mandatory declarations."}
           </p>
         </div>
 
         <button
           onClick={onStartNewInspection}
-          className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-900/50 hover:shadow-blue-900/80 transition-all flex items-center gap-2.5 shrink-0"
+          className={`px-6 py-3.5 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-2.5 shrink-0 cursor-pointer ${
+            isManufacturer
+              ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-950/50 hover:shadow-amber-950/80"
+              : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50 hover:shadow-blue-900/80"
+          }`}
         >
           <PlusCircle className="w-5 h-5" />
-          <span>+ New Package Inspection</span>
+          <span>{isManufacturer ? "+ Screen New Packaging" : "+ New Package Inspection"}</span>
         </button>
       </div>
 

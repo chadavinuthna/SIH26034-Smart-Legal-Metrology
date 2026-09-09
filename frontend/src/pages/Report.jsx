@@ -50,10 +50,15 @@ const getEffectiveStatus = (ruleId, systemStatus, overridesMap) => {
  * Helper to build reportData from inspection, initializing from inspection.report if present
  * while preserving standard defaults for older inspections without a report.
  */
-const buildInitialReportData = (insp) => {
+const buildInitialReportData = (insp, currentUser) => {
+  const isInspector = currentUser?.role === "INSPECTOR";
+  const defaultOfficer = isInspector
+    ? `${currentUser.full_name || "Insp. Vikram Singh"}${currentUser.organization ? ` (${currentUser.organization})` : ""}`
+    : "Insp. Vikram Singh (LM-8842)";
+
   if (!insp) {
     return {
-      officerName: "Insp. Vikram Singh (LM-8842)",
+      officerName: defaultOfficer,
       notes: "",
       observations: {},
       recommendations: {},
@@ -75,7 +80,7 @@ const buildInitialReportData = (insp) => {
   const saved = insp.report;
   if (saved) {
     return {
-      officerName: saved.officer_name || "Insp. Vikram Singh (LM-8842)",
+      officerName: saved.officer_name || defaultOfficer,
       notes: saved.notes || "",
       observations: { ...defaultObs, ...(saved.observations || {}) },
       recommendations: { ...defaultRecs, ...(saved.recommendations || {}) },
@@ -85,7 +90,7 @@ const buildInitialReportData = (insp) => {
   }
 
   return {
-    officerName: "Insp. Vikram Singh (LM-8842)",
+    officerName: defaultOfficer,
     notes: "",
     observations: defaultObs,
     recommendations: defaultRecs,
@@ -94,14 +99,17 @@ const buildInitialReportData = (insp) => {
   };
 };
 
-export default function Report({ inspection, onBackToResults }) {
+export default function Report({ currentUser, inspection, onBackToResults }) {
+  const isInspector = currentUser?.role === "INSPECTOR";
+  const isManufacturer = currentUser?.role === "MANUFACTURER";
+
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
   // Initialize report-level editable data from inspection.report when available, or defaults
-  const [reportData, setReportData] = useState(() => buildInitialReportData(inspection));
+  const [reportData, setReportData] = useState(() => buildInitialReportData(inspection, currentUser));
 
   // Temporary draft state for edit session (Cancel/Save behavior)
   const [tempData, setTempData] = useState(reportData);
@@ -132,13 +140,14 @@ export default function Report({ inspection, onBackToResults }) {
 
   // Re-synchronize when inspection or saved report changes
   useEffect(() => {
-    const initial = buildInitialReportData(inspection);
+    const initial = buildInitialReportData(inspection, currentUser);
     setReportData(initial);
     setTempData(initial);
     setValidationErrors({});
     setSaveError(null);
     setIsEditing(false);
-  }, [inspection?.inspection_id, inspection?.report?.updated_at]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inspection?.inspection_id, inspection?.report?.updated_at, currentUser?.id]);
 
   if (!inspection) {
     return (
@@ -166,6 +175,7 @@ export default function Report({ inspection, onBackToResults }) {
   } = inspection;
 
   const handleStartEditing = () => {
+    if (!isInspector) return;
     setTempData({
       ...reportData,
       observations: { ...reportData.observations },
@@ -297,17 +307,19 @@ export default function Report({ inspection, onBackToResults }) {
         <div className="flex items-center gap-2.5">
           {!isEditing ? (
             <>
-              <button
-                onClick={handleStartEditing}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
-                title="Edit report notes, observations, recommendations, and compliance overrides"
-              >
-                <Pencil className="w-3.5 h-3.5 text-amber-400" />
-                <span>Edit Report</span>
-              </button>
+              {isInspector && (
+                <button
+                  onClick={handleStartEditing}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Edit report notes, observations, recommendations, and compliance overrides"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Edit Report</span>
+                </button>
+              )}
               <button
                 onClick={handlePrint}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2"
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print / Save as PDF</span>
@@ -903,7 +915,7 @@ export default function Report({ inspection, onBackToResults }) {
             <div className="inline-block text-left">
               <div className="w-44 border-b border-slate-400 mb-1" />
               <span className="text-[10px] uppercase font-bold text-slate-600 block">
-                Authorized Inspector Signature
+                {isManufacturer ? "Auditor / Quality QA Sign-off" : "Authorized Inspector Signature"}
               </span>
               <span className="text-xs font-bold text-slate-900 block">
                 {reportData.officerName}
