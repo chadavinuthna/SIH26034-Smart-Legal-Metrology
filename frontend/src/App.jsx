@@ -23,6 +23,11 @@ export default function App() {
     setCurrentPage("progress");
   };
 
+  const handleAnalysisSuccess = (result) => {
+    setCurrentInspection(result);
+    setCurrentPage("results");
+  };
+
   const handleAnalysisCompleted = async () => {
     if (!pendingUploadData) return;
     const result = await analyzePackageImage({
@@ -83,7 +88,12 @@ export default function App() {
           )}
 
           {currentPage === "progress" && (
-            <AnalysisProgress onComplete={handleAnalysisCompleted} />
+            <AnalysisProgress
+              uploadData={pendingUploadData}
+              onAnalysisSuccess={handleAnalysisSuccess}
+              onComplete={handleAnalysisCompleted}
+              onCancel={() => setCurrentPage("new_inspection")}
+            />
           )}
 
           {currentPage === "results" && (

@@ -7,6 +7,12 @@ from app.schemas import (
     RuleResult,
     RuleStatusEnum,
 )
+from app.rules.date_utils import (
+    get_current_inspection_date,
+    parse_flexible_date,
+    parse_best_before_duration,
+    compute_derived_best_before,
+)
 
 
 def check_lm001_manufacturer(product: ProductData) -> RuleResult:
@@ -73,8 +79,16 @@ def check_lm002_country_of_origin(product: ProductData) -> RuleResult:
     if import_status == ImportStatusEnum.UNCERTAIN:
         if product.is_imported is True:
             import_status = ImportStatusEnum.IMPORTED
-        elif product.is_imported is False or (country and country.lower() in ["india", "ind"]):
+        elif product.is_imported is False or (country and any(w in country.lower() for w in ["india", "bharat", "domestic", "ind"])):
             import_status = ImportStatusEnum.DOMESTIC
+        elif product.manufacturer and product.manufacturer.address:
+            addr = product.manufacturer.address.lower()
+            if re.search(r"\b[1-9][0-9]{5}\b", addr) or "india" in addr:
+                import_status = ImportStatusEnum.DOMESTIC
+            else:
+                from app.services.paddle_ocr_service import INDIAN_STATES
+                if any(st in addr for st in INDIAN_STATES):
+                    import_status = ImportStatusEnum.DOMESTIC
 
     # 4 Deterministic States:
     # 1. PASS: Clearly imported product AND country of origin detected.
@@ -226,62 +240,220 @@ def check_lm005_manufacture_date(product: ProductData) -> RuleResult:
     date_type = "Manufacture Date" if mfg_date else "Packing Date"
 
     if date_str:
+        # Check if date contains digits (valid format)
+        if any(c.isdigit() for c in date_str):
+            return RuleResult(
+                rule_id="LM-005",
+                rule_name="Manufacture / Packing Date",
+                field="dates",
+                status=RuleStatusEnum.PASS,
+                detected_value=f"{date_type}: {date_str}",
+                evidence=f"{date_type}: {date_str}",
+                reason=f"{date_type} declaration ('{date_str}') is present on package label.",
+                recommendation=None,
+            )
+        else:
+            return RuleResult(
+                rule_id="LM-005",
+                rule_name="Manufacture / Packing Date",
+                field="dates",
+                status=RuleStatusEnum.REVIEW,
+                detected_value=f"{date_type}: {date_str}",
+                evidence=f"{date_type}: {date_str}",
+                reason=f"{date_type} text ('{date_str}') detected but format requires officer review.",
+                recommendation="Inspect package label manually to verify month and year of manufacture or packing.",
+            )
+
+    # Check for ambiguous evidence in raw_evidence (e.g. keywords present but date unreadable)
+    raw_text = " ".join(product.raw_evidence).lower() if product.raw_evidence else ""
+    if re.search(r"\b(?:mfg|pkd|packing|manufacture|date\s*of\s*mfg)\b", raw_text) and not re.search(r"not\s+(?:printed|available|stated)", raw_text):
         return RuleResult(
             rule_id="LM-005",
             rule_name="Manufacture / Packing Date",
             field="dates",
-            status=RuleStatusEnum.PASS,
-            detected_value=f"{date_type}: {date_str}",
-            evidence=f"{date_type}: {date_str}",
-            reason=f"{date_type} declaration ('{date_str}') is present on package label.",
-            recommendation=None,
+            status=RuleStatusEnum.REVIEW,
+            detected_value="Ambiguous",
+            evidence="Manufacture/packing date indicator detected but numeric date value could not be confirmed.",
+            reason="Manufacture or packing date keyword was detected on package, but date value requires officer verification.",
+            recommendation="Inspect package label manually to confirm month and year of manufacture or packing.",
         )
-    else:
-        return RuleResult(
-            rule_id="LM-005",
-            rule_name="Manufacture / Packing Date",
-            field="dates",
-            status=RuleStatusEnum.FAIL,
-            detected_value="Not detected",
-            evidence="Evidence not available.",
-            reason="Neither month and year of manufacture nor packing date was detected.",
-            recommendation="Month and year of manufacture or packing must be declared on package.",
-        )
+
+    return RuleResult(
+        rule_id="LM-005",
+        rule_name="Manufacture / Packing Date",
+        field="dates",
+        status=RuleStatusEnum.FAIL,
+        detected_value="Not detected",
+        evidence="Evidence not available.",
+        reason="Neither month and year of manufacture nor packing date was detected.",
+        recommendation="Month and year of manufacture or packing must be declared on package.",
+    )
 
 
 def check_lm006_best_before(product: ProductData) -> RuleResult:
-    """LM-006 — Best Before / Use By (Structured Applicability Logic)"""
+    """LM-006 — Best Before / Use By / Expiry Date (Inspection Date & Duration Aware)"""
     dates = product.dates
     best_before = dates.best_before.strip() if dates.best_before else None
     use_by = dates.use_by.strip() if dates.use_by else None
+    expiry_date = dates.expiry_date.strip() if dates.expiry_date else None
+    duration_str = dates.best_before_duration.strip() if dates.best_before_duration else None
     applicability = product.date_applicability
 
-    date_val = best_before or use_by
-    date_label = "Best Before" if best_before else "Use By"
+    # Resolve statutory inspection date (defaults to current Asia/Kolkata date)
+    inspection_date = get_current_inspection_date(override=dates.inspection_date)
+    insp_str = inspection_date.strftime("%d %b %Y")
 
-    # Infer applicability from category if applicability is UNCERTAIN
+    # Infer applicability from category if UNCERTAIN
     if applicability == DateApplicabilityEnum.UNCERTAIN and product.category:
         cat = product.category.lower()
-        if any(c in cat for c in ["food", "beverage", "cosmetic", "pharma", "snack"]):
+        if any(c in cat for c in ["food", "beverage", "cosmetic", "pharma", "snack", "biscuit"]):
             applicability = DateApplicabilityEnum.APPLICABLE
         elif any(c in cat for c in ["electronic", "gadget", "apparel", "hardware", "tool"]):
             applicability = DateApplicabilityEnum.NOT_APPLICABLE
 
-    # Logic:
-    # 1. Date detected -> PASS
-    if date_val:
-        return RuleResult(
-            rule_id="LM-006",
-            rule_name="Best Before / Use By",
-            field="dates",
-            status=RuleStatusEnum.PASS,
-            detected_value=f"{date_label}: {date_val}",
-            evidence=f"{date_label}: {date_val}",
-            reason=f"Expiry / Best Before declaration ('{date_val}') is present.",
-            recommendation=None,
-        )
-    # 2. NOT_APPLICABLE -> NA
-    elif applicability == DateApplicabilityEnum.NOT_APPLICABLE:
+    # -------------------------------------------------------------
+    # PRIORITY 1: Explicit Expiry / Use By Date
+    # -------------------------------------------------------------
+    explicit_expiry_str = use_by or expiry_date
+    if explicit_expiry_str:
+        exp_dt, is_my = parse_flexible_date(explicit_expiry_str, is_expiry=True)
+        if exp_dt:
+            exp_formatted = exp_dt.strftime("%d %b %Y") if not is_my else exp_dt.strftime("%b %Y")
+            if exp_dt < inspection_date:
+                return RuleResult(
+                    rule_id="LM-006",
+                    rule_name="Best Before / Use By",
+                    field="dates",
+                    status=RuleStatusEnum.FAIL,
+                    detected_value=f"EXPIRED: {exp_formatted}",
+                    evidence=f"Use By / Expiry Date: {explicit_expiry_str}",
+                    reason=f"Product expired on {exp_formatted} (Inspection date: {insp_str}).",
+                    recommendation="Remove expired commodity from commercial sale or distribution.",
+                )
+            else:
+                return RuleResult(
+                    rule_id="LM-006",
+                    rule_name="Best Before / Use By",
+                    field="dates",
+                    status=RuleStatusEnum.PASS,
+                    detected_value=f"Valid (Use By: {exp_formatted})",
+                    evidence=f"Use By / Expiry Date: {explicit_expiry_str}",
+                    reason=f"Product is within its valid shelf life through {exp_formatted} (Inspection date: {insp_str}).",
+                    recommendation=None,
+                )
+        else:
+            return RuleResult(
+                rule_id="LM-006",
+                rule_name="Best Before / Use By",
+                field="dates",
+                status=RuleStatusEnum.REVIEW,
+                detected_value=explicit_expiry_str,
+                evidence=f"Use By / Expiry: {explicit_expiry_str}",
+                reason=f"Expiry declaration text ('{explicit_expiry_str}') detected, but date format requires manual review.",
+                recommendation="Verify the exact expiry / use-by date on package label.",
+            )
+
+    # -------------------------------------------------------------
+    # PRIORITY 2: Best Before Duration (e.g. '6 Months from Manufacture')
+    # -------------------------------------------------------------
+    target_bb = duration_str or best_before
+    if target_bb:
+        parsed_dur = parse_best_before_duration(target_bb)
+        if parsed_dur:
+            dur_amt, dur_unit = parsed_dur
+            base_str = dates.manufacture_date or dates.packing_date
+            if base_str:
+                base_dt, is_base_my = parse_flexible_date(base_str, is_expiry=False)
+                if base_dt:
+                    derived_expiry = compute_derived_best_before(base_dt, dur_amt, dur_unit, is_base_my)
+                    derived_formatted = derived_expiry.strftime("%d %b %Y")
+                    if derived_expiry < inspection_date:
+                        return RuleResult(
+                            rule_id="LM-006",
+                            rule_name="Best Before / Use By",
+                            field="dates",
+                            status=RuleStatusEnum.FAIL,
+                            detected_value=f"EXPIRED: {derived_formatted}",
+                            evidence=f"Best Before: {target_bb} (Base Date: {base_str} -> Derived Expiry: {derived_formatted})",
+                            reason=f"Best Before period expired on {derived_formatted} (Derived from {base_str} + {target_bb}; Inspection date: {insp_str}).",
+                            recommendation="Remove expired commodity from commercial sale or distribution.",
+                        )
+                    else:
+                        return RuleResult(
+                            rule_id="LM-006",
+                            rule_name="Best Before / Use By",
+                            field="dates",
+                            status=RuleStatusEnum.PASS,
+                            detected_value=f"Valid (Best Before: {derived_formatted})",
+                            evidence=f"Best Before: {target_bb} (Base Date: {base_str} -> Derived Expiry: {derived_formatted})",
+                            reason=f"Product is within its Best Before period through {derived_formatted} (Derived from {base_str} + {target_bb}; Inspection date: {insp_str}).",
+                            recommendation=None,
+                        )
+                else:
+                    return RuleResult(
+                        rule_id="LM-006",
+                        rule_name="Best Before / Use By",
+                        field="dates",
+                        status=RuleStatusEnum.REVIEW,
+                        detected_value=target_bb,
+                        evidence=f"Best Before: {target_bb} (Base Date: {base_str})",
+                        reason=f"Best before duration ('{target_bb}') declared, but base date ('{base_str}') could not be resolved reliably.",
+                        recommendation="Confirm base manufacture or packing date to verify expiry date.",
+                    )
+            else:
+                return RuleResult(
+                    rule_id="LM-006",
+                    rule_name="Best Before / Use By",
+                    field="dates",
+                    status=RuleStatusEnum.REVIEW,
+                    detected_value=target_bb,
+                    evidence=f"Best Before: {target_bb}",
+                    reason=f"Best before duration ('{target_bb}') declared, but base manufacture/packing date is missing to compute expiry.",
+                    recommendation="Verify package label for manufacture or packing date.",
+                )
+        else:
+            # Best before text is a direct calendar date (e.g. '07/2026' or '14 Dec 2025')
+            bb_dt, is_my = parse_flexible_date(target_bb, is_expiry=True)
+            if bb_dt:
+                bb_formatted = bb_dt.strftime("%d %b %Y") if not is_my else bb_dt.strftime("%b %Y")
+                if bb_dt < inspection_date:
+                    return RuleResult(
+                        rule_id="LM-006",
+                        rule_name="Best Before / Use By",
+                        field="dates",
+                        status=RuleStatusEnum.FAIL,
+                        detected_value=f"EXPIRED: {bb_formatted}",
+                        evidence=f"Best Before: {target_bb}",
+                        reason=f"Best Before date expired on {bb_formatted} (Inspection date: {insp_str}).",
+                        recommendation="Remove expired commodity from commercial sale or distribution.",
+                    )
+                else:
+                    return RuleResult(
+                        rule_id="LM-006",
+                        rule_name="Best Before / Use By",
+                        field="dates",
+                        status=RuleStatusEnum.PASS,
+                        detected_value=f"Valid (Best Before: {bb_formatted})",
+                        evidence=f"Best Before: {target_bb}",
+                        reason=f"Product is within its Best Before period through {bb_formatted} (Inspection date: {insp_str}).",
+                        recommendation=None,
+                    )
+            else:
+                return RuleResult(
+                    rule_id="LM-006",
+                    rule_name="Best Before / Use By",
+                    field="dates",
+                    status=RuleStatusEnum.REVIEW,
+                    detected_value=target_bb,
+                    evidence=f"Best Before: {target_bb}",
+                    reason=f"Best before declaration ('{target_bb}') detected, but date requires officer review.",
+                    recommendation="Inspect package label manually to verify Best Before date.",
+                )
+
+    # -------------------------------------------------------------
+    # PRIORITY 3: No Date Detected (Applicability Safeguard)
+    # -------------------------------------------------------------
+    if applicability == DateApplicabilityEnum.NOT_APPLICABLE:
         return RuleResult(
             rule_id="LM-006",
             rule_name="Best Before / Use By",
@@ -289,10 +461,9 @@ def check_lm006_best_before(product: ProductData) -> RuleResult:
             status=RuleStatusEnum.NA,
             detected_value="Not Applicable",
             evidence="Product category identified as non-perishable.",
-            reason=f"Best before / expiry date rule is Not Applicable for category '{product.category or 'Non-perishable'}'.",
+            reason=f"Best before / expiry date rule is Not Applicable for non-perishable category '{product.category or 'Non-perishable'}'.",
             recommendation=None,
         )
-    # 3. APPLICABLE + missing date -> FAIL
     elif applicability == DateApplicabilityEnum.APPLICABLE:
         return RuleResult(
             rule_id="LM-006",
@@ -304,7 +475,6 @@ def check_lm006_best_before(product: ProductData) -> RuleResult:
             reason=f"Best before / expiry date is missing for perishable category '{product.category or 'Food'}'.",
             recommendation="Perishable items must declare Best Before period or Use By date.",
         )
-    # 4. UNCERTAIN -> REVIEW
     else:
         return RuleResult(
             rule_id="LM-006",

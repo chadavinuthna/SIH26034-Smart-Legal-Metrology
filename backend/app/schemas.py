@@ -52,6 +52,9 @@ class DatesData(BaseModel):
     packing_date: Optional[str] = None
     best_before: Optional[str] = None
     use_by: Optional[str] = None
+    expiry_date: Optional[str] = None
+    best_before_duration: Optional[str] = None
+    inspection_date: Optional[str] = None
 
 
 class ConsumerCareData(BaseModel):
@@ -112,6 +115,8 @@ class InspectionResponse(BaseModel):
         "Prototype screening result. Final regulatory determination should be verified "
         "by an authorized Legal Metrology officer and applicable current regulations."
     )
+    execution_time_ms: Optional[float] = None
+    timings: Optional[dict] = None
 
 
 # Backward compatibility aliases

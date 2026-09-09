@@ -2,6 +2,10 @@ import sys
 from pathlib import Path
 import io
 
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from PIL import Image
 
 # ---------------------------------------------------------
@@ -18,7 +22,7 @@ from backend.app.services.paddle_ocr_service import paddle_ocr_service
 # Therefore, this test expects a PNG/JPG version.
 # ---------------------------------------------------------
 
-def test_image(image_path: Path):
+def run_image_test(image_path: Path):
     print("=" * 70)
     print(f"TESTING: {image_path}")
     print("=" * 70)

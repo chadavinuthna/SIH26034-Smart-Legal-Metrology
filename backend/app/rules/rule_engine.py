@@ -1,5 +1,5 @@
 from app.database.database import SessionLocal
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 from sqlalchemy.orm import Session
@@ -18,11 +18,14 @@ from app.rules.rule_registry import get_rule_evaluator
 def evaluate_product_compliance(
     product: ProductData,
     db: Session = None,
+    inspection_date: Optional[str] = None,
 ) -> Tuple[List[RuleResult], OverallStatusEnum, int, InspectionSummary]:
     """
     Loads enabled rules from the database and evaluates them
     using the deterministic rule registry.
     """
+    if inspection_date:
+        product.dates.inspection_date = str(inspection_date)
 
     if db is None:
         db = SessionLocal()

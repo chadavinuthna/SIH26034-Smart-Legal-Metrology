@@ -164,3 +164,263 @@ def test_20_country_summary_consistency():
     assert "India" in res.detected_value
     assert res.detected_value != "Not detected"
     assert res.status != RuleStatusEnum.REVIEW
+
+
+def test_21_indian_address_and_pin_prevents_origin_review():
+    # Manufacturer address with 6-digit Indian PIN code
+    p1 = ProductData(
+        manufacturer=ManufacturerData(name="Britannia Industries", address="Plot 12, Whitefield, Bangalore - 560066"),
+        country_of_origin=None,
+        import_status=ImportStatusEnum.UNCERTAIN,
+    )
+    res1 = check_lm002_country_of_origin(p1)
+    assert res1.status == RuleStatusEnum.NA
+    assert "Domestic" in res1.evidence or "India" in res1.detected_value
+
+    # Manufacturer address with Indian state
+    p2 = ProductData(
+        manufacturer=ManufacturerData(name="Parle Products", address="Vile Parle East, Mumbai, Maharashtra"),
+        country_of_origin=None,
+        import_status=ImportStatusEnum.UNCERTAIN,
+    )
+    res2 = check_lm002_country_of_origin(p2)
+    assert res2.status == RuleStatusEnum.NA
+
+
+def test_22_best_before_duration_not_treated_as_expired():
+    # When inspection date is within the shelf life, best before duration PASSES
+    p = ProductData(
+        category="Biscuits",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+        dates=DatesData(
+            best_before="6 Months from Manufacture",
+            manufacture_date="01/2025",
+            inspection_date="2025-04-15",
+        ),
+    )
+    res = check_lm006_best_before(p)
+    assert res.status == RuleStatusEnum.PASS
+    assert "Valid (Best Before" in res.detected_value
+
+
+def test_23_date_distinction_mfg_vs_exp():
+    p = ProductData(
+        dates=DatesData(
+            manufacture_date="15/01/2026",
+            packing_date=None,
+            best_before="9 Months",
+            use_by="15/10/2026",
+            inspection_date="2026-05-01",
+        )
+    )
+    mfg_res = check_lm005_manufacture_date(p)
+    exp_res = check_lm006_best_before(p)
+
+    assert mfg_res.status == RuleStatusEnum.PASS
+    assert "Manufacture Date: 15/01/2026" in mfg_res.detected_value
+
+    assert exp_res.status == RuleStatusEnum.PASS
+    assert "Valid (Use By: 15 Oct 2026)" in exp_res.detected_value
+
+
+# -------------------------------------------------------------
+# User Statutory Requirement Test Cases A through G
+# -------------------------------------------------------------
+
+def test_case_a_expired_use_by():
+    """Case A: manufacture_date=2025-06-13, use_by=2025-12-14, inspection_date=2026-09-09 -> LM-005 PASS, LM-006 FAIL"""
+    p = ProductData(
+        dates=DatesData(
+            manufacture_date="2025-06-13",
+            use_by="2025-12-14",
+            inspection_date="2026-09-09",
+        ),
+        category="Food",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+    )
+    lm005 = check_lm005_manufacture_date(p)
+    lm006 = check_lm006_best_before(p)
+
+    assert lm005.status == RuleStatusEnum.PASS
+    assert "2025-06-13" in lm005.detected_value
+
+    assert lm006.status == RuleStatusEnum.FAIL
+    assert "EXPIRED: 14 Dec 2025" in lm006.detected_value
+
+
+def test_case_b_valid_future_use_by():
+    """Case B: manufacture_date=2026-06-13, use_by=2026-12-14, inspection_date=2026-09-09 -> LM-005 PASS, LM-006 PASS"""
+    p = ProductData(
+        dates=DatesData(
+            manufacture_date="2026-06-13",
+            use_by="2026-12-14",
+            inspection_date="2026-09-09",
+        ),
+        category="Food",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+    )
+    lm005 = check_lm005_manufacture_date(p)
+    lm006 = check_lm006_best_before(p)
+
+    assert lm005.status == RuleStatusEnum.PASS
+    assert lm006.status == RuleStatusEnum.PASS
+    assert "Valid (Use By: 14 Dec 2026)" in lm006.detected_value
+
+
+def test_case_c_derived_best_before_expired():
+    """Case C: manufacture_date=2025-06-13, best_before=6 months, inspection_date=2026-09-09 -> derived=2025-12-13, LM-006 FAIL"""
+    p = ProductData(
+        dates=DatesData(
+            manufacture_date="2025-06-13",
+            best_before="6 Months from Manufacture",
+            inspection_date="2026-09-09",
+        ),
+        category="Food",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+    )
+    lm005 = check_lm005_manufacture_date(p)
+    lm006 = check_lm006_best_before(p)
+
+    assert lm005.status == RuleStatusEnum.PASS
+    assert lm006.status == RuleStatusEnum.FAIL
+    assert "EXPIRED: 13 Dec 2025" in lm006.detected_value
+
+
+def test_case_d_mfg_detected_expiry_unreadable():
+    """Case D: manufacture_date detected but expiry date unreadable -> LM-005 PASS, LM-006 REVIEW"""
+    p = ProductData(
+        dates=DatesData(
+            manufacture_date="13 June 2025",
+            best_before="Best Before [UNREADABLE BLURRED TEXT]",
+            inspection_date="2026-09-09",
+        ),
+        category="Food",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+    )
+    lm005 = check_lm005_manufacture_date(p)
+    lm006 = check_lm006_best_before(p)
+
+    assert lm005.status == RuleStatusEnum.PASS
+    assert lm006.status == RuleStatusEnum.REVIEW
+
+
+def test_case_e_split_mfg_date_tokens():
+    """Case E: manufacture date split into multiple OCR boxes: 'Mfg.', 'Date:', '13 June 2025' -> parser detects, LM-005 PASS"""
+    from app.services.paddle_ocr_service import paddle_ocr_service, OCRLineItem, OCRBoundingBox
+    lines = [
+        OCRLineItem(
+            line_index=0, text="Mfg.", confidence=0.95,
+            bbox=OCRBoundingBox(polygon=[[10, 50], [40, 50], [40, 65], [10, 65]], x_min=10, y_min=50, x_max=40, y_max=65)
+        ),
+        OCRLineItem(
+            line_index=1, text="Date:", confidence=0.95,
+            bbox=OCRBoundingBox(polygon=[[45, 50], [80, 50], [80, 65], [45, 65]], x_min=45, y_min=50, x_max=80, y_max=65)
+        ),
+        OCRLineItem(
+            line_index=2, text="13 June 2025", confidence=0.95,
+            bbox=OCRBoundingBox(polygon=[[85, 50], [160, 50], [160, 65], [85, 65]], x_min=85, y_min=50, x_max=160, y_max=65)
+        ),
+    ]
+    date_info, _ = paddle_ocr_service.parser.parse_dates(lines)
+    assert date_info.manufacture_date == "13 June 2025"
+
+    p = ProductData(dates=date_info)
+    lm005 = check_lm005_manufacture_date(p)
+    assert lm005.status == RuleStatusEnum.PASS
+    assert "13 June 2025" in lm005.detected_value
+
+
+def test_case_f_spatial_use_by_date():
+    """Case F: explicit Use By date spatially separated on adjacent line -> parser detects and LM-006 evaluates against inspection date"""
+    from app.services.paddle_ocr_service import paddle_ocr_service, OCRLineItem, OCRBoundingBox
+    lines = [
+        OCRLineItem(
+            line_index=0, text="Use By:", confidence=0.95,
+            bbox=OCRBoundingBox(polygon=[[10, 50], [80, 50], [80, 65], [10, 65]], x_min=10, y_min=50, x_max=80, y_max=65)
+        ),
+        OCRLineItem(
+            line_index=1, text="14 Dec 2025", confidence=0.95,
+            bbox=OCRBoundingBox(polygon=[[10, 75], [90, 75], [90, 90], [10, 90]], x_min=10, y_min=75, x_max=90, y_max=90)
+        ),
+    ]
+    date_info, _ = paddle_ocr_service.parser.parse_dates(lines)
+    assert date_info.use_by == "14 Dec 2025"
+
+    # Evaluated on current date (after 14 Dec 2025) -> FAIL
+    p_expired = ProductData(dates=DatesData(use_by=date_info.use_by, inspection_date="2026-09-09"))
+    assert check_lm006_best_before(p_expired).status == RuleStatusEnum.FAIL
+
+    # Evaluated on inspection date before 14 Dec 2025 -> PASS
+    p_valid = ProductData(dates=DatesData(use_by=date_info.use_by, inspection_date="2025-08-01"))
+    assert check_lm006_best_before(p_valid).status == RuleStatusEnum.PASS
+
+
+def test_case_g_same_calendar_day_expiry():
+    """Same calendar date as inspection date is valid through that calendar date"""
+    p = ProductData(
+        dates=DatesData(
+            use_by="09 Sep 2026",
+            inspection_date="2026-09-09",
+        ),
+        category="Food",
+        date_applicability=DateApplicabilityEnum.APPLICABLE,
+    )
+    res = check_lm006_best_before(p)
+    assert res.status == RuleStatusEnum.PASS
+    assert "Valid (Use By: 09 Sep 2026)" in res.detected_value
+
+
+
+def test_24_mrp_tax_inclusive_variations():
+    variations = [
+        "MRP Rs. 80.00 (Incl. of all taxes)",
+        "MRP ₹120 (Inclusive of all taxes)",
+        "Price: 50.00 tax inclusive",
+        "MRP: Rs 45.00 all taxes included",
+        "MRP ₹99 (incl. all taxes)",
+    ]
+    for raw in variations:
+        p = ProductData(mrp=MrpData(value="50", raw_text=raw))
+        res = check_lm008_mrp_tax_inclusive(p)
+        assert res.status == RuleStatusEnum.PASS, f"Failed for variation: {raw}"
+
+
+def test_25_canonical_db_location():
+    from app.database.database import DB_FILE, engine
+    assert DB_FILE.name == "smartmetrix.db"
+    assert DB_FILE.parent.name == "backend"
+    assert DB_FILE.exists()
+    assert engine.url.database.endswith("smartmetrix.db")
+
+
+def test_26_optional_gemini_skipped_without_key(monkeypatch):
+    import os
+    from app.services.ai_service import disambiguate_ambiguous_fields
+    monkeypatch.setenv("GEMINI_API_KEY", "")
+
+    empty_p = ProductData()
+    res_product, elapsed_ms = disambiguate_ambiguous_fields(
+        image_bytes=b"fake_image_bytes",
+        product_data=empty_p,
+    )
+    assert elapsed_ms == 0.0
+    assert res_product.product_name is None
+
+
+def test_27_unreadable_handled_as_review_or_na():
+    # Non-perishable product with missing expiry -> NA
+    p_nonperish = ProductData(category="Hardware", date_applicability=DateApplicabilityEnum.NOT_APPLICABLE)
+    assert check_lm006_best_before(p_nonperish).status == RuleStatusEnum.NA
+
+    # Uncertain category with missing expiry -> REVIEW
+    p_uncat = ProductData(category=None, date_applicability=DateApplicabilityEnum.UNCERTAIN)
+    assert check_lm006_best_before(p_uncat).status == RuleStatusEnum.REVIEW
+
+    # Ambiguous price without explicit MRP tag -> REVIEW
+    p_price = ProductData(mrp=MrpData(value=None, raw_text="Special Offer 99"))
+    assert check_lm007_mrp(p_price).status == RuleStatusEnum.REVIEW
+
+    # Uncertain net quantity unit -> REVIEW
+    p_qty = ProductData(quantity=QuantityData(value="500", unit=None, raw_text="Net 500"))
+    assert check_lm004_net_quantity(p_qty).status == RuleStatusEnum.REVIEW
+

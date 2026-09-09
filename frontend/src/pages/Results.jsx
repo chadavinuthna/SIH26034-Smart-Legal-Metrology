@@ -108,6 +108,26 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
             Category: <span className="font-bold text-slate-700">{product?.category || "Food"}</span> • Brand:{" "}
             <span className="font-bold text-slate-700">{product?.brand_name || "Unstated"}</span>
           </p>
+
+          {inspection?.timings && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+              <span className="font-bold text-slate-700">⚡ Latency:</span>
+              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-medium">
+                OCR: {inspection.timings.ocr_time_ms}ms
+              </span>
+              {inspection.timings.llm_time_ms > 0 && (
+                <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-mono font-medium">
+                  LLM: {inspection.timings.llm_time_ms}ms
+                </span>
+              )}
+              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-medium">
+                Rules: {inspection.timings.rule_engine_time_ms}ms
+              </span>
+              <span className="bg-blue-50 text-blue-800 font-bold px-2 py-0.5 rounded font-mono">
+                Total: {inspection.timings.total_time_ms}ms
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Overall Score & Status */}

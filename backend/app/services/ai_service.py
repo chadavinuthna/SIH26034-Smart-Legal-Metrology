@@ -1,7 +1,8 @@
 import json
 import os
 import re
-from typing import Dict, Any, Optional
+import time
+from typing import Dict, Any, Optional, Tuple
 from PIL import Image
 import io
 
@@ -210,3 +211,124 @@ def extract_product_data_from_image(
         if category_hint and category_hint != "Auto Detect":
             p.category = category_hint
         return p
+
+
+def disambiguate_ambiguous_fields(
+    image_bytes: bytes,
+    product_data: ProductData,
+    category_hint: Optional[str] = None,
+) -> Tuple[ProductData, float]:
+    """
+    Optional Gemini Vision fallback for ambiguous or missing declarations.
+    Only triggered if:
+    1. GEMINI_API_KEY environment variable is configured and valid.
+    2. Any critical field (generic_name, mrp.value, quantity.value, manufacturer.name) is missing or incomplete.
+
+    Never overwrites already detected high-confidence verified fields.
+    Returns (ProductData, elapsed_llm_ms).
+    """
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key or api_key == "your_gemini_api_key_here":
+        return product_data, 0.0
+
+    # Determine if any critical fields are actually missing or ambiguous
+    needs_disambiguation = (
+        not product_data.generic_name
+        or not product_data.mrp.value
+        or not product_data.quantity.value
+        or not product_data.manufacturer.name
+        or product_data.mrp.inclusive_of_taxes is None
+        or (not product_data.dates.manufacture_date and not product_data.dates.packing_date)
+    )
+
+    if not needs_disambiguation:
+        return product_data, 0.0
+
+    t0 = time.time()
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key)
+        pil_img = Image.open(io.BytesIO(image_bytes))
+
+        disambiguation_prompt = (
+            "You are a Legal Metrology label verification assistant. "
+            "A local OCR system has extracted the following partial data from this packaged product:\n"
+            f"{product_data.model_dump_json(indent=2)}\n\n"
+            "Please examine the image closely to verify or resolve any missing, ambiguous, or incomplete fields "
+            "(such as generic commodity name, MRP and tax inclusion, net quantity, manufacturer address, or dates). "
+            "CRITICAL: DO NOT hallucinate. If a declaration is not clearly visible on the image, leave it null. "
+            "Output STRICT JSON conforming to the ProductData schema format."
+        )
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[pil_img, disambiguation_prompt],
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                response_mime_type="application/json",
+            ),
+        )
+
+        raw_json_text = response.text.strip()
+        if raw_json_text.startswith("```json"):
+            raw_json_text = raw_json_text[7:]
+        if raw_json_text.endswith("```"):
+            raw_json_text = raw_json_text[:-3]
+
+        parsed = json.loads(raw_json_text.strip())
+        llm_data = ProductData.model_validate(parsed)
+
+        # Merge fields carefully: only fill in if original was missing / None
+        if not product_data.generic_name and llm_data.generic_name:
+            product_data.generic_name = llm_data.generic_name
+
+        if not product_data.brand_name and llm_data.brand_name:
+            product_data.brand_name = llm_data.brand_name
+
+        if not product_data.product_name and llm_data.product_name:
+            product_data.product_name = llm_data.product_name
+
+        if not product_data.mrp.value and llm_data.mrp.value:
+            product_data.mrp.value = llm_data.mrp.value
+            if not product_data.mrp.raw_text and llm_data.mrp.raw_text:
+                product_data.mrp.raw_text = llm_data.mrp.raw_text
+
+        if product_data.mrp.inclusive_of_taxes is None and llm_data.mrp.inclusive_of_taxes is not None:
+            product_data.mrp.inclusive_of_taxes = llm_data.mrp.inclusive_of_taxes
+
+        if (not product_data.quantity.value or not product_data.quantity.unit) and (llm_data.quantity.value and llm_data.quantity.unit):
+            product_data.quantity = llm_data.quantity
+
+        if not product_data.manufacturer.name and llm_data.manufacturer.name:
+            product_data.manufacturer.name = llm_data.manufacturer.name
+        if not product_data.manufacturer.address and llm_data.manufacturer.address:
+            product_data.manufacturer.address = llm_data.manufacturer.address
+
+        if not product_data.dates.manufacture_date and llm_data.dates.manufacture_date:
+            product_data.dates.manufacture_date = llm_data.dates.manufacture_date
+        if not product_data.dates.packing_date and llm_data.dates.packing_date:
+            product_data.dates.packing_date = llm_data.dates.packing_date
+        if not product_data.dates.best_before and llm_data.dates.best_before:
+            product_data.dates.best_before = llm_data.dates.best_before
+        if not product_data.dates.use_by and llm_data.dates.use_by:
+            product_data.dates.use_by = llm_data.dates.use_by
+
+        if not product_data.country_of_origin and llm_data.country_of_origin:
+            product_data.country_of_origin = llm_data.country_of_origin
+            product_data.import_status = llm_data.import_status
+
+        if not product_data.consumer_care.phone and llm_data.consumer_care.phone:
+            product_data.consumer_care.phone = llm_data.consumer_care.phone
+        if not product_data.consumer_care.email and llm_data.consumer_care.email:
+            product_data.consumer_care.email = llm_data.consumer_care.email
+
+        elapsed_ms = (time.time() - t0) * 1000.0
+        return product_data, elapsed_ms
+
+    except Exception as e:
+        print(f"Gemini disambiguation skipped due to error: {e}")
+        elapsed_ms = (time.time() - t0) * 1000.0
+        return product_data, elapsed_ms
+

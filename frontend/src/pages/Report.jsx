@@ -42,33 +42,10 @@ const getEffectiveStatus = (ruleId, systemStatus, overridesMap) => {
 };
 
 export default function Report({ inspection, onBackToResults }) {
-  if (!inspection) {
-    return (
-      <div className="max-w-4xl mx-auto p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-          <Scale className="w-6 h-6" />
-        </div>
-        <h3 className="text-base font-bold text-slate-800">No Inspection Record Available</h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Please complete an inspection or select an inspection from history to view and generate a compliance report.
-        </p>
-      </div>
-    );
-  }
-
-  const {
-    inspection_id,
-    status,
-    score,
-    product,
-    checks = [],
-    timestamp,
-    disclaimer,
-    is_demo,
-  } = inspection;
-
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+
+  const checks = inspection?.checks || [];
 
   // Initialize report-level editable data from the inspection source of truth
   const [reportData, setReportData] = useState(() => {
@@ -113,7 +90,31 @@ export default function Report({ inspection, onBackToResults }) {
     setTempData(initial);
     setValidationErrors({});
     setIsEditing(false);
-  }, [inspection_id]);
+  }, [inspection?.inspection_id]);
+
+  if (!inspection) {
+    return (
+      <div className="max-w-4xl mx-auto p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+          <Scale className="w-6 h-6" />
+        </div>
+        <h3 className="text-base font-bold text-slate-800">No Inspection Record Available</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please complete an inspection or select an inspection from history to view and generate a compliance report.
+        </p>
+      </div>
+    );
+  }
+
+  const {
+    inspection_id,
+    status,
+    score,
+    product,
+    timestamp,
+    disclaimer,
+    is_demo,
+  } = inspection;
 
   const handleStartEditing = () => {
     setTempData({
