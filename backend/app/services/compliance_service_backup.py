@@ -1,7 +1,3 @@
-from .ocr_service import ocr_service
-from .ocr_parser import ocr_parser
-from .veg_symbol_detector import veg_symbol_detector
-from .image_annotation_service import image_annotation_service
 """Compliance Service: Orchestrates image analysis, AI extraction, and deterministic rule evaluation."""
 import uuid
 import logging
@@ -22,6 +18,7 @@ from ..schemas import (
     OverallStatus,
 )
 from ..rules.rule_engine import rule_engine
+from .ai_service import ai_service
 from .storage_service import storage_service
 from ..utils.image_utils import validate_and_inspect_image
 
@@ -126,46 +123,11 @@ DEMO_SAMPLES = {
 }
 
 
-def _find_ocr_bbox(words, labels):
-    """Find a bounding box covering OCR words matching the given labels."""
-    matches = []
-    for word in words:
-        text = str(word.get("text", "")).strip().upper().strip(":.-")
-        if text in labels:
-            matches.append(word)
-    if not matches:
-        return None
-    x1 = min(int(w["left"]) for w in matches)
-    y1 = min(int(w["top"]) for w in matches)
-    x2 = max(int(w["left"]) + int(w["width"]) for w in matches)
-    y2 = max(int(w["top"]) + int(w["height"]) for w in matches)
-    return {"x": x1, "y": y1, "width": x2 - x1, "height": y2 - y1}
-
-
 class ComplianceService:
     """High-level orchestration service for package compliance inspections."""
 
     def __init__(self):
         self._seed_initial_history()
-
-    def _find_text_bbox(self, ocr_words, target_text):
-        if not ocr_words or not target_text:
-            return None
-        target_tokens=[t.strip(":,.;-").lower() for t in str(target_text).replace(":"," ").replace(","," ").split() if t]
-        normalized=[str(w.get("text","")).strip().lower().strip(":,.;-") for w in ocr_words]
-        if not target_tokens:
-            return None
-        for start in range(len(normalized)):
-            end=start+len(target_tokens)
-            if end<=len(normalized) and normalized[start:end]==target_tokens:
-                selected=ocr_words[start:end]
-                x1=min(int(w.get("left",0)) for w in selected)
-                y1=min(int(w.get("top",0)) for w in selected)
-                x2=max(int(w.get("left",0))+int(w.get("width",0)) for w in selected)
-                y2=max(int(w.get("top",0))+int(w.get("height",0)) for w in selected)
-                if x2>x1 and y2>y1:
-                    return {"x":x1,"y":y1,"width":x2-x1,"height":y2-y1}
-        return None
 
     def _seed_initial_history(self):
         """Seed demo historical inspections if storage is empty."""
@@ -219,160 +181,46 @@ class ComplianceService:
             )
             storage_service.save(resp2)
 
-    def _merge_product_data(self, base: ProductData, incoming: ProductData) -> ProductData:
-        """Merge non-empty OCR fields from multiple package images."""
-        for field in ["product_name", "brand_name", "generic_name", "category", "country_of_origin", "package_type"]:
-            current = getattr(base, field, None)
-            value = getattr(incoming, field, None)
-            if (current is None or current == "" or current == "Other") and value not in (None, ""):
-                setattr(base, field, value)
-
-        for group_name in ["manufacturer", "quantity", "mrp", "dates", "consumer_care"]:
-            base_group = getattr(base, group_name, None)
-            incoming_group = getattr(incoming, group_name, None)
-            if not base_group or not incoming_group:
-                continue
-            for field_name in incoming_group.model_fields:
-                current = getattr(base_group, field_name, None)
-                value = getattr(incoming_group, field_name, None)
-                if (current is None or current == "") and value not in (None, ""):
-                    setattr(base_group, field_name, value)
-
-        for key, value in incoming.custom_fields.items():
-            if value not in (None, ""):
-                base.custom_fields[key] = value
-
-        base.raw_evidence.extend(incoming.raw_evidence)
-        return base
-
     def process_inspection(
         self,
-        image_bytes_list: list[bytes],
+        image_bytes: bytes,
         category_hint: Optional[str] = None,
         force_demo_sample: Optional[str] = None,
     ) -> InspectionResponse:
         """Run full end-to-end inspection pipeline."""
         # 1. Pillow Image Validation & Dimension Inspection
-        if not image_bytes_list:
-            raise ValueError("At least one package image is required.")
-
-        pil_image, img_meta = validate_and_inspect_image(image_bytes_list[0])
+        pil_image, img_meta = validate_and_inspect_image(image_bytes)
 
         is_demo = False
         product_data: ProductData
 
-        # 2. Information Extraction
+        # 2. Information Extraction (Gemini AI or Demo Fallback)
         if force_demo_sample and force_demo_sample in DEMO_SAMPLES:
             product_data = DEMO_SAMPLES[force_demo_sample]
             is_demo = True
+        elif not ai_service.is_configured():
+            logger.info("Gemini API key not found. Using intelligent demo product data fallback.")
+            product_data = DEMO_SAMPLES["sample_compliant"]
+            is_demo = True
         else:
-            if not ocr_service.is_available():
-                raise RuntimeError("Local Tesseract OCR is not available.")
+            try:
+                # AI Extracts and structures product data; AI NEVER makes legal decisions
+                product_data = ai_service.extract_product_data(pil_image, category_hint)
+            except Exception as e:
+                logger.warning(f"AI extraction error ({e}), activating demo mode fallback.")
+                product_data = DEMO_SAMPLES["sample_compliant"]
+                is_demo = True
 
-            product_data = None
-
-            for index, image_bytes in enumerate(image_bytes_list):
-                current_image, _ = validate_and_inspect_image(image_bytes)
-                ocr_result = ocr_service.extract(current_image)
-
-                if not ocr_result["text"].strip():
-                    continue
-
-                current_data = ocr_parser.parse(ocr_result["text"], category_hint)
-
-                # Preserve the first successfully parsed product as the base.
-                if product_data is None:
-                    product_data = current_data
-                else:
-                    product_data = self._merge_product_data(product_data, current_data)
-
-                # Capture OCR location of USE BY for the primary image.
-                if index == 0:
-                    ocr_words = ocr_result.get("words", [])
-                    use_by_words = [
-                        w for w in ocr_words
-                        if str(w.get("text", "")).strip().upper().strip(":.-") in {"USE", "BY", "USEBY"}
-                    ]
-                    use_by_value = getattr(current_data.dates, "use_by", None) if current_data.dates else None
-                    date_words = [
-                        w for w in ocr_words
-                        if use_by_value and str(w.get("text", "")).strip() == use_by_value
-                    ]
-                    evidence_words = use_by_words + date_words
-
-                    if evidence_words:
-                        x1 = min(int(w["left"]) for w in evidence_words)
-                        y1 = min(int(w["top"]) for w in evidence_words)
-                        x2 = max(int(w["left"]) + int(w["width"]) for w in evidence_words)
-                        y2 = max(int(w["top"]) + int(w["height"]) for w in evidence_words)
-                        product_data.custom_fields["use_by_bbox"] = str({
-                            "x": x1,
-                            "y": y1,
-                            "width": x2 - x1,
-                            "height": y2 - y1,
-                        })
-
-                    veg_result = veg_symbol_detector.detect(current_image)
-                    if veg_result["detected"]:
-                        product_data.custom_fields["veg_nonveg"] = veg_result["type"]
-                        product_data.custom_fields["veg_nonveg_bbox"] = str(veg_result["bbox"])
-
-            if product_data is None:
-                raise RuntimeError("No readable text was detected in any uploaded package image. Please upload clearer images.")
-
-            is_demo = False
+        # Override category if user provided explicit selection and not auto-detect
+        if category_hint and category_hint.lower() not in ["auto detect", ""]:
+            product_data.category = category_hint
 
         # 3. Deterministic Compliance Rule Engine
         # Pure algorithmic compliance evaluation
         checks, summary, overall_status, score = rule_engine.evaluate(product_data)
 
-        # 4. Generate annotated evidence image
+        # 4. Generate Response & Save
         inspection_id = generate_inspection_id()
-        annotation_regions = []
-
-        if product_data.custom_fields.get("veg_nonveg_bbox"):
-            import ast
-            try:
-                veg_bbox = ast.literal_eval(product_data.custom_fields["veg_nonveg_bbox"])
-                annotation_regions.append({"label": "Vegetarian Mark", "bbox": veg_bbox})
-            except (ValueError, SyntaxError):
-                pass
-
-        if product_data.custom_fields.get("use_by_bbox"):
-            import ast
-            try:
-                use_by_bbox = ast.literal_eval(product_data.custom_fields["use_by_bbox"])
-                annotation_regions.append({"label": "Expired Use By", "bbox": use_by_bbox})
-            except (ValueError, SyntaxError):
-                pass
-
-        # Highlight problematic OCR evidence for failed/reviewed rules.
-        primary_ocr_words = locals().get("ocr_words", [])
-        existing_bboxes = {
-            str(region.get("bbox")) for region in annotation_regions
-            if region.get("bbox")
-        }
-
-        for check in checks:
-            if check.status.value not in {"FAIL", "REVIEW"}:
-                continue
-
-            evidence_text = check.detected_value or check.evidence
-            bbox = self._find_text_bbox(primary_ocr_words, evidence_text)
-
-            if bbox and str(bbox) not in existing_bboxes:
-                annotation_regions.append({
-                    "label": f"{check.status.value}: {check.rule_name}",
-                    "bbox": bbox,
-                })
-                existing_bboxes.add(str(bbox))
-
-        annotated_image_url = None
-        if annotation_regions:
-            annotation_path = f"data/annotated_{inspection_id}.png"
-            image_annotation_service.annotate(pil_image, annotation_regions, annotation_path)
-            annotated_image_url = f"/data/annotated_{inspection_id}.png"
-
         created_at = datetime.now().isoformat()
 
         response = InspectionResponse(
@@ -384,7 +232,6 @@ class ComplianceService:
             checks=checks,
             summary=summary,
             image_metadata=img_meta,
-            annotated_image_url=annotated_image_url,
             created_at=created_at,
             is_demo=is_demo,
         )

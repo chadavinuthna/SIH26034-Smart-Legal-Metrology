@@ -7,6 +7,7 @@ from ..schemas import InspectionResponse
 from ..services.compliance_service import compliance_service, DEMO_SAMPLES
 from ..services.storage_service import storage_service
 from ..services.ai_service import ai_service
+from ..rules.custom_rule_service import custom_rule_service
 
 router = APIRouter(prefix="/api/inspection", tags=["Inspection"])
 
@@ -15,23 +16,104 @@ class DemoAnalyzeRequest(BaseModel):
     sample_type: str = "sample_compliant"
 
 
+class CustomRuleRequest(BaseModel):
+    rule_id: str
+    rule_name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    field: str
+    operator: str
+    expected_value: Optional[str] = None
+    failure_message: Optional[str] = None
+    recommendation: Optional[str] = None
+
+
+@router.get("/rules")
+async def get_compliance_rules():
+    """Return all compliance rules stored in SQLite."""
+
+    rules = custom_rule_service.list_rules()
+
+    for rule in rules:
+        # All rules are editable now.
+        rule["is_fixed"] = False
+        rule["is_editable"] = True
+
+    return {
+        "rules": rules,
+        "total_rules": len(rules),
+    }
+
+
+@router.post("/rules")
+async def add_compliance_rule(payload: CustomRuleRequest):
+    """Add a new compliance rule to SQLite."""
+
+    try:
+        return custom_rule_service.create_rule(payload.model_dump())
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.put("/rules/{rule_id}")
+async def update_compliance_rule(
+    rule_id: str,
+    payload: CustomRuleRequest,
+):
+    """Update any compliance rule stored in SQLite."""
+
+    try:
+        return custom_rule_service.update_rule(
+            rule_id,
+            payload.model_dump(exclude_unset=True),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.delete("/rules/{rule_id}")
+async def disable_compliance_rule(rule_id: str):
+    """Disable any compliance rule without permanently deleting it."""
+
+    try:
+        return custom_rule_service.disable_rule(rule_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
 @router.post("/analyze", response_model=InspectionResponse)
 async def analyze_package(
-    image: UploadFile = File(...),
+    images: List[UploadFile] = File(...),
     category: Optional[str] = Form("Auto Detect"),
     demo_sample: Optional[str] = Form(None),
 ):
     """Analyze an uploaded packaged commodity image for Legal Metrology compliance."""
     try:
-        image_bytes = await image.read()
-        if not image_bytes:
+        if not images:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one package image is required.")
+
+        image_bytes_list = []
+        for uploaded_image in images:
+            image_bytes = await uploaded_image.read()
+            if image_bytes:
+                image_bytes_list.append(image_bytes)
+
+        if not image_bytes_list:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Empty image file received. Please upload a clear package image.",
+                detail="No valid image files received. Please upload at least one clear package image.",
             )
 
         result = compliance_service.process_inspection(
-            image_bytes=image_bytes,
+            image_bytes_list=image_bytes_list,
             category_hint=category,
             force_demo_sample=demo_sample,
         )

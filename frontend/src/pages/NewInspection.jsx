@@ -18,7 +18,7 @@ export default function NewInspection({
   onStartAnalysis,
   systemConfig,
 }) {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 const [imagePreview, setImagePreview] = useState(null);
 const [category, setCategory] = useState('Auto Detect');
 const [activeDemoSample, setActiveDemoSample] = useState(null);
@@ -39,30 +39,30 @@ const canvasRef = useRef(null);
     'Other',
   ];
 
-  const handleFileChange = (file) => {
-    if (!file) return;
+  const handleFileChange = (files) => {
+    if (!files || files.length === 0) return;
     setErrorMsg(null);
 
-    // Validate mime type
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Please upload a valid image file (JPEG, PNG, WEBP).');
+    const validFiles = files.filter((file) => file.type.startsWith("image/"));
+    if (validFiles.length !== files.length) {
+      setErrorMsg("Please upload valid image files (JPEG, PNG, WEBP).");
       return;
     }
 
-    // Validate size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('Image file size exceeds 10MB limit. Please upload an optimized label image.');
+    const oversized = validFiles.find((file) => file.size > 10 * 1024 * 1024);
+    if (oversized) {
+      setErrorMsg("Image file size exceeds 10MB limit. Please upload an optimized label image.");
       return;
     }
 
-    setSelectedFile(file);
+    setSelectedFiles(validFiles);
     setActiveDemoSample(null);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target.result);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(validFiles[0]);
   };
 
   const handleDragOver = (e) => {
@@ -79,7 +79,7 @@ const canvasRef = useRef(null);
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileChange(e.dataTransfer.files[0]);
+      handleFileChange(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -216,7 +216,7 @@ const handleSubmit = () => {
     }
 
     onStartAnalysis({
-      file: selectedFile,
+      files: selectedFiles,
       category: category,
       demoSampleId: activeDemoSample,
       previewUrl: imagePreview,
@@ -295,9 +295,9 @@ const handleSubmit = () => {
             <input
               type="file"
               ref={fileInputRef}
-              accept="image/jpeg,image/png,image/webp,image/jpg"
+              accept="image/jpeg,image/png,image/webp,image/jpg" multiple
               className="hidden"
-              onChange={(e) => handleFileChange(e.target.files?.[0])}
+              onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
             />
 
             <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto text-blue-900 mb-4 shadow-2xs">
@@ -340,13 +340,13 @@ const handleSubmit = () => {
             <ImagePreviewCard
               imageSrc={imagePreview}
               fileInfo={
-                selectedFile
-                  ? { name: selectedFile.name, size: selectedFile.size }
+                selectedFiles.length > 0
+                  ? { name: selectedFiles.length + ' package image' + (selectedFiles.length > 1 ? 's' : ''), size: selectedFiles.reduce((total, file) => total + file.size, 0) }
                   : { name: `${activeDemoSample || 'sample'}_package_mock.svg` }
               }
               imageMetadata={{
-                width: selectedFile ? 1280 : 600,
-                height: selectedFile ? 720 : 400,
+                width: selectedFiles.length > 0 ? 1280 : 600,
+                height: selectedFiles.length > 0 ? 720 : 400,
                 quality_label: 'GOOD',
                 text_visibility: 'CLEAR',
               }}
@@ -356,9 +356,9 @@ const handleSubmit = () => {
             <input
               type="file"
               ref={fileInputRef}
-              accept="image/jpeg,image/png,image/webp,image/jpg"
+              accept="image/jpeg,image/png,image/webp,image/jpg" multiple
               className="hidden"
-              onChange={(e) => handleFileChange(e.target.files?.[0])}
+              onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
             />
           </div>
         )}
@@ -393,11 +393,11 @@ const handleSubmit = () => {
               <span className="font-semibold">
                 {activeDemoSample
                   ? 'Demo Simulation Sample'
-                  : selectedFile
-                  ? 'Custom Uploaded Package'
+                  : selectedFiles.length > 0
+                  ? 'Package Images Uploaded'
                   : 'Awaiting Image Selection'}
               </span>
-              {systemConfig?.ai_service_configured && selectedFile && (
+              {systemConfig?.ai_service_configured && selectedFiles.length > 0 && (
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
                   Gemini Vision
                 </span>
