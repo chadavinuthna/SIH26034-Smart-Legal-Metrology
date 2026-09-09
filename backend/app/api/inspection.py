@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from app.schemas import InspectionResponse
+from app.schemas import InspectionResponse, ReportData
 from app.services.compliance_service import run_inspection
 from app.services.storage_service import storage_service
 from sqlalchemy.orm import Session
@@ -103,3 +104,25 @@ def get_inspection_by_id(inspection_id: str):
             detail=f"Inspection record '{inspection_id}' not found.",
         )
     return InspectionResponse.model_validate(data)
+
+
+@router.put("/{inspection_id}/report", response_model=InspectionResponse)
+def update_report(inspection_id: str, report: ReportData):
+    """
+    Update / persist official report notes, observations, recommendations,
+    and inspector decision overrides for an inspection record.
+    """
+    report_dict = report.model_dump()
+    if not report_dict.get("updated_at"):
+        report_dict["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    updated = storage_service.update_inspection_report(
+        inspection_id=inspection_id,
+        report_data=report_dict,
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Inspection record '{inspection_id}' not found.",
+        )
+    return InspectionResponse.model_validate(updated)

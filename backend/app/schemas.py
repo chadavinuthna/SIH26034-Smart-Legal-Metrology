@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -99,6 +99,20 @@ class InspectionSummary(BaseModel):
     na_count: int = 0
 
 
+class InspectorOverride(BaseModel):
+    decision: str
+    reason: str
+
+
+class ReportData(BaseModel):
+    officer_name: Optional[str] = "Insp. Vikram Singh (LM-8842)"
+    notes: Optional[str] = ""
+    observations: Optional[Dict[str, str]] = Field(default_factory=dict)
+    recommendations: Optional[Dict[str, str]] = Field(default_factory=dict)
+    overrides: Optional[Dict[str, InspectorOverride]] = Field(default_factory=dict)
+    updated_at: Optional[str] = None
+
+
 class InspectionResponse(BaseModel):
     inspection_id: str
     status: OverallStatusEnum
@@ -112,6 +126,7 @@ class InspectionResponse(BaseModel):
         "Prototype screening result. Final regulatory determination should be verified "
         "by an authorized Legal Metrology officer and applicable current regulations."
     )
+    report: Optional[ReportData] = None
 
 
 # Backward compatibility aliases

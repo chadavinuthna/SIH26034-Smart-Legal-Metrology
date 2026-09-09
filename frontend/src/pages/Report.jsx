@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import StatusBadge from "../components/StatusBadge";
+import { saveReportData } from "../services/api";
 import {
   Printer,
   Scale,
@@ -41,6 +42,54 @@ const getEffectiveStatus = (ruleId, systemStatus, overridesMap) => {
   return systemStatus;
 };
 
+/**
+ * Helper to build reportData from inspection, initializing from inspection.report if present
+ * while preserving standard defaults for older inspections without a report.
+ */
+const buildInitialReportData = (insp) => {
+  if (!insp) {
+    return {
+      officerName: "Insp. Vikram Singh (LM-8842)",
+      notes: "",
+      observations: {},
+      recommendations: {},
+      overrides: {},
+      updatedAt: null,
+    };
+  }
+
+  const checks = insp.checks || [];
+  const defaultObs = {};
+  const defaultRecs = {};
+  checks.forEach((c) => {
+    defaultObs[c.rule_id] = c.reason || "";
+    if (c.recommendation) {
+      defaultRecs[c.rule_id] = c.recommendation;
+    }
+  });
+
+  const saved = insp.report;
+  if (saved) {
+    return {
+      officerName: saved.officer_name || "Insp. Vikram Singh (LM-8842)",
+      notes: saved.notes || "",
+      observations: { ...defaultObs, ...(saved.observations || {}) },
+      recommendations: { ...defaultRecs, ...(saved.recommendations || {}) },
+      overrides: saved.overrides ? JSON.parse(JSON.stringify(saved.overrides)) : {},
+      updatedAt: saved.updated_at || null,
+    };
+  }
+
+  return {
+    officerName: "Insp. Vikram Singh (LM-8842)",
+    notes: "",
+    observations: defaultObs,
+    recommendations: defaultRecs,
+    overrides: {},
+    updatedAt: null,
+  };
+};
+
 export default function Report({ inspection, onBackToResults }) {
   if (!inspection) {
     return (
@@ -69,51 +118,24 @@ export default function Report({ inspection, onBackToResults }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
-  // Initialize report-level editable data from the inspection source of truth
-  const [reportData, setReportData] = useState(() => {
-    const obs = {};
-    const recs = {};
-    checks.forEach((c) => {
-      obs[c.rule_id] = c.reason || "";
-      if (c.recommendation) {
-        recs[c.rule_id] = c.recommendation;
-      }
-    });
-    return {
-      officerName: "Insp. Vikram Singh (LM-8842)",
-      notes: "",
-      observations: obs,
-      recommendations: recs,
-      overrides: {}, // { [rule_id]: { decision: "", reason: "" } }
-    };
-  });
+  // Initialize report-level editable data from inspection.report when available, or defaults
+  const [reportData, setReportData] = useState(() => buildInitialReportData(inspection));
 
   // Temporary draft state for edit session (Cancel/Save behavior)
   const [tempData, setTempData] = useState(reportData);
 
-  // Re-synchronize when inspection changes
+  // Re-synchronize when inspection or saved report changes
   useEffect(() => {
-    const obs = {};
-    const recs = {};
-    checks.forEach((c) => {
-      obs[c.rule_id] = c.reason || "";
-      if (c.recommendation) {
-        recs[c.rule_id] = c.recommendation;
-      }
-    });
-    const initial = {
-      officerName: "Insp. Vikram Singh (LM-8842)",
-      notes: "",
-      observations: obs,
-      recommendations: recs,
-      overrides: {},
-    };
+    const initial = buildInitialReportData(inspection);
     setReportData(initial);
     setTempData(initial);
     setValidationErrors({});
+    setSaveError(null);
     setIsEditing(false);
-  }, [inspection_id]);
+  }, [inspection?.inspection_id, inspection?.report?.updated_at]);
 
   const handleStartEditing = () => {
     setTempData({
@@ -125,6 +147,7 @@ export default function Report({ inspection, onBackToResults }) {
       ),
     });
     setValidationErrors({});
+    setSaveError(null);
     setIsEditing(true);
   };
 
@@ -138,10 +161,11 @@ export default function Report({ inspection, onBackToResults }) {
       ),
     });
     setValidationErrors({});
+    setSaveError(null);
     setIsEditing(false);
   };
 
-  const handleSaveEditing = () => {
+  const handleSaveEditing = async () => {
     const errors = {};
 
     checks.forEach((check) => {
@@ -163,15 +187,43 @@ export default function Report({ inspection, onBackToResults }) {
     }
 
     setValidationErrors({});
-    setReportData({
-      ...tempData,
-      observations: { ...tempData.observations },
-      recommendations: { ...tempData.recommendations },
-      overrides: Object.fromEntries(
-        Object.entries(tempData.overrides || {}).map(([k, v]) => [k, { ...v }])
-      ),
-    });
-    setIsEditing(false);
+    setSaveError(null);
+    setIsSaving(true);
+
+    try {
+      const payload = {
+        officer_name: tempData.officerName,
+        notes: tempData.notes,
+        observations: tempData.observations,
+        recommendations: tempData.recommendations,
+        overrides: Object.fromEntries(
+          Object.entries(tempData.overrides || {})
+            .filter(([_, v]) => v && v.decision)
+            .map(([k, v]) => [k, { decision: v.decision, reason: v.reason || "" }])
+        ),
+      };
+
+      const updatedInspection = await saveReportData(inspection_id, payload);
+
+      if (updatedInspection && updatedInspection.report) {
+        setReportData(buildInitialReportData(updatedInspection));
+      } else {
+        setReportData({
+          ...tempData,
+          observations: { ...tempData.observations },
+          recommendations: { ...tempData.recommendations },
+          overrides: Object.fromEntries(
+            Object.entries(tempData.overrides || {}).map(([k, v]) => [k, { ...v }])
+          ),
+        });
+      }
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to persist report:", err);
+      setSaveError(err.message || "Failed to save report to server. Your draft has been kept in the editor.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handlePrint = () => {
@@ -237,17 +289,19 @@ export default function Report({ inspection, onBackToResults }) {
             <>
               <button
                 onClick={handleCancelEditing}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5"
+                disabled={isSaving}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Cancel</span>
               </button>
               <button
                 onClick={handleSaveEditing}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-1.5"
+                disabled={isSaving}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-1.5"
               >
                 <Check className="w-4 h-4" />
-                <span>Save Report</span>
+                <span>{isSaving ? "Saving to Server..." : "Save Report"}</span>
               </button>
             </>
           )}
@@ -257,6 +311,15 @@ export default function Report({ inspection, onBackToResults }) {
       {/* Edit Mode & Validation Notice Banners (Hidden on Print) */}
       {isEditing && (
         <div className="space-y-3 no-print">
+          {saveError && (
+            <div className="bg-rose-50 border border-rose-400 rounded-xl p-3.5 text-rose-900 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+              <div>
+                <strong>Save Failed:</strong> {saveError}
+              </div>
+            </div>
+          )}
+
           {Object.keys(validationErrors).length > 0 && (
             <div className="bg-rose-50 border border-rose-400 rounded-xl p-3.5 text-rose-900 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
               <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
@@ -301,7 +364,12 @@ export default function Report({ inspection, onBackToResults }) {
 
           <div className="text-right space-y-1">
             <p className="font-mono text-sm font-black text-blue-950">{inspection_id}</p>
-            <p className="text-xs font-semibold text-slate-500">{timestamp}</p>
+            <p className="text-xs font-semibold text-slate-500">Screened: {timestamp}</p>
+            {reportData.updatedAt && (
+              <p className="text-[10px] font-bold text-emerald-700">
+                Report Saved: {reportData.updatedAt}
+              </p>
+            )}
             {is_demo && (
               <span className="inline-block px-2 py-0.5 text-[10px] font-bold text-amber-800 bg-amber-100 rounded-md border border-amber-300">
                 DEMO EVALUATION

@@ -58,6 +58,25 @@ export async function fetchInspectionById(id) {
   return null;
 }
 
+export async function saveReportData(inspectionId, reportData) {
+  const response = await fetch(`${API_BASE_URL}/${inspectionId}/report`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(reportData),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || `Failed to save report: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  saveInspectionToHistory(data);
+  return data;
+}
+
 function simulateDemoInspection(sampleType = "compliant", categoryHint = "Food") {
   const isCompliant = sampleType === "compliant";
   const now = new Date();

@@ -44,6 +44,13 @@ class StorageService:
     def get_inspection(self, inspection_id: str) -> Optional[Dict]:
         return self._inspections.get(inspection_id)
 
+    def update_inspection_report(self, inspection_id: str, report_data: Dict) -> Optional[Dict]:
+        if inspection_id in self._inspections:
+            self._inspections[inspection_id]["report"] = report_data
+            self._save_to_disk()
+            return self._inspections[inspection_id]
+        return None
+
     def get_all_inspections(self) -> List[Dict]:
         # Return sorted by timestamp descending
         items = list(self._inspections.values())
