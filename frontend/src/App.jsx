@@ -19,24 +19,50 @@ export default function App() {
 
   // Flow handlers
   const handleStartAnalysis = (uploadData) => {
-    setPendingUploadData(uploadData);
+    const files = uploadData?.files || (uploadData?.file ? [uploadData.file] : []);
+    const previewUrls = uploadData?.previewUrls || (uploadData?.previewUrl ? [uploadData.previewUrl] : []);
+
+    setPendingUploadData({
+      ...uploadData,
+      files,
+      previewUrls,
+      file: uploadData?.file || files[0] || null,
+      previewUrl: uploadData?.previewUrl || previewUrls[0] || null,
+      category: uploadData?.category || "Auto Detect",
+      demoSample: uploadData?.demoSample || null,
+    });
     setCurrentPage("progress");
   };
 
   const handleAnalysisSuccess = (result) => {
+    if (result && pendingUploadData) {
+      if (!result.previewUrls && pendingUploadData.previewUrls?.length) {
+        result.previewUrls = pendingUploadData.previewUrls;
+      }
+      if (!result.previewUrl && (pendingUploadData.previewUrl || pendingUploadData.previewUrls?.[0])) {
+        result.previewUrl = pendingUploadData.previewUrl || pendingUploadData.previewUrls[0];
+      }
+    }
     setCurrentInspection(result);
     setCurrentPage("results");
   };
 
   const handleAnalysisCompleted = async () => {
     if (!pendingUploadData) return;
+    const files = pendingUploadData.files && pendingUploadData.files.length > 0
+      ? pendingUploadData.files
+      : (pendingUploadData.file ? [pendingUploadData.file] : []);
+
     const result = await analyzePackageImage({
-      file: pendingUploadData.file,
+      files,
+      file: pendingUploadData.file || files[0] || null,
       category: pendingUploadData.category,
       demoSample: pendingUploadData.demoSample,
     });
-    // Attach preview URL for UI display
-    result.previewUrl = pendingUploadData.previewUrl;
+
+    // Attach both preview URLs array and primary preview URL for UI display
+    result.previewUrls = pendingUploadData.previewUrls || (pendingUploadData.previewUrl ? [pendingUploadData.previewUrl] : []);
+    result.previewUrl = pendingUploadData.previewUrl || result.previewUrls[0] || null;
     setCurrentInspection(result);
     setCurrentPage("results");
   };

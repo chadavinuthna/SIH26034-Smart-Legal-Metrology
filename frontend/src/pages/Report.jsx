@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import StatusBadge from "../components/StatusBadge";
+import CheckDetailModal, { HighlightedBBoxImage } from "../components/CheckDetailModal";
+import demoBiscuitsSvg from "../assets/demo_biscuits.svg";
+import demoSnackSvg from "../assets/demo_snack.svg";
 import { saveReportData } from "../services/api";
 import {
   Printer,
@@ -10,6 +13,7 @@ import {
   X,
   FileEdit,
   AlertCircle,
+  Crosshair,
 } from "lucide-react";
 
 /**
@@ -101,6 +105,30 @@ export default function Report({ inspection, onBackToResults }) {
 
   // Temporary draft state for edit session (Cancel/Save behavior)
   const [tempData, setTempData] = useState(reportData);
+
+  // Selected check for detailed interactive visual modal
+  const [selectedCheck, setSelectedCheck] = useState(null);
+
+  // Resolves the image source URL for a given 1-based image index
+  const getImageUrlForIndex = (imgIndex) => {
+    if (inspection?.previewUrls && inspection.previewUrls.length > 0) {
+      if (imgIndex && imgIndex > 0) {
+        const idx = imgIndex - 1;
+        if (idx < inspection.previewUrls.length) {
+          return inspection.previewUrls[idx];
+        }
+      }
+      return inspection.previewUrls[0];
+    }
+    if (inspection?.previewUrl) return inspection.previewUrl;
+    if (inspection?.is_demo) {
+      const isSnack =
+        inspection?.product?.brand_name?.includes("XYZ") ||
+        inspection?.product?.product_name?.includes("Spicy");
+      return isSnack ? demoSnackSvg : demoBiscuitsSvg;
+    }
+    return null;
+  };
 
   // Re-synchronize when inspection or saved report changes
   useEffect(() => {
@@ -595,7 +623,24 @@ export default function Report({ inspection, onBackToResults }) {
                     </td>
 
                     <td className="py-2.5 px-3 font-medium text-slate-800 border border-slate-200 align-top">
-                      {check.detected_value || "Not detected"}
+                      <div>{check.detected_value || "Not detected"}</div>
+                      {check.bbox && check.image_index ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCheck(check)}
+                          className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors no-print"
+                          title="Click to view highlighted bounding box on source image"
+                        >
+                          <Crosshair className="w-2.5 h-2.5" />
+                          <span>Panel #{check.image_index} Evidence</span>
+                        </button>
+                      ) : (
+                        (check.status === "FAIL" || check.status === "REVIEW") && (
+                          <div className="mt-1 text-[9px] text-slate-400 italic">
+                            Declaration missing
+                          </div>
+                        )
+                      )}
                     </td>
 
                     <td className="py-2.5 px-3 text-[11px] text-slate-600 border border-slate-200 align-top">
@@ -796,6 +841,45 @@ export default function Report({ inspection, onBackToResults }) {
                         </div>
                       </div>
                     )}
+
+                    {/* Visual Error Location & Highlighting */}
+                    {v.bbox && v.image_index ? (
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                            <Crosshair className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Visual Error Location — Source Panel #{v.image_index}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCheck(v)}
+                            className="text-[10px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors no-print"
+                          >
+                            Enlarge &amp; Inspect
+                          </button>
+                        </div>
+
+                        <div className="max-w-md">
+                          <HighlightedBBoxImage
+                            imageUrl={getImageUrlForIndex(v.image_index)}
+                            bbox={v.bbox}
+                            imageIndex={v.image_index}
+                            status={effStatus}
+                            label={`[${v.rule_id}] ${v.detected_value || ""}`}
+                            alt={`Visual evidence for ${v.rule_id}`}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      (effStatus === "FAIL" || effStatus === "REVIEW" || v.status === "FAIL" || v.status === "REVIEW") && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-200/80 flex items-center gap-2 text-[10px] text-slate-500 italic">
+                          <AlertCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>
+                            No visual error location on label: Mandatory statutory declaration is missing/absent from package.
+                          </span>
+                        </div>
+                      )
+                    )}
                   </div>
                 );
               })}
@@ -835,6 +919,13 @@ export default function Report({ inspection, onBackToResults }) {
           </p>
         </div>
       </div>
+
+      {/* Expandable Check Detail Modal for Interactive Inspection */}
+      <CheckDetailModal
+        check={selectedCheck}
+        inspection={inspection}
+        onClose={() => setSelectedCheck(null)}
+      />
     </div>
   );
 }

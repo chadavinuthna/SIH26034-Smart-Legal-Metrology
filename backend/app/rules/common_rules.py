@@ -1,10 +1,11 @@
 import re
-from typing import Optional
+import functools
+from typing import Optional, Dict, Any, List, Tuple
 from app.schemas import (
     DateApplicabilityEnum,
     ImportStatusEnum,
     ProductData,
-    RuleResult,
+    RuleResult as BaseRuleResult,
     RuleStatusEnum,
 )
 from app.rules.date_utils import (
@@ -15,6 +16,143 @@ from app.rules.date_utils import (
 )
 
 
+class RuleResult(BaseRuleResult):
+    """RuleResult extended to preserve spatial PaddleOCR bounding box and source image index."""
+    image_index: Optional[int] = None
+    bbox: Optional[Dict[str, Any]] = None
+
+
+def get_ocr_lines_from_product(product: ProductData) -> List[Dict[str, Any]]:
+    """Extracts structured OCR detections from product.raw_evidence or service fallback."""
+    ocr_lines = []
+    if product and product.raw_evidence:
+        for item in product.raw_evidence:
+            if isinstance(item, dict) and item.get("type") == "ocr_line":
+                ocr_lines.append(item)
+    if not ocr_lines:
+        try:
+            from app.services.paddle_ocr_service import paddle_ocr_service
+            if hasattr(paddle_ocr_service, "last_raw_result") and paddle_ocr_service.last_raw_result:
+                for line in paddle_ocr_service.last_raw_result.lines:
+                    ocr_lines.append({
+                        "type": "ocr_line",
+                        "text": line.text,
+                        "confidence": line.confidence,
+                        "image_index": 1,
+                        "bbox": {
+                            "x_min": line.bbox.x_min,
+                            "y_min": line.bbox.y_min,
+                            "x_max": line.bbox.x_max,
+                            "y_max": line.bbox.y_max,
+                            "polygon": line.bbox.polygon,
+                        },
+                    })
+        except Exception:
+            pass
+    return ocr_lines
+
+
+def find_matching_ocr_detection(
+    detected_value: Optional[str],
+    evidence: Optional[str],
+    ocr_lines: List[Dict[str, Any]],
+) -> Tuple[Optional[int], Optional[Dict[str, Any]]]:
+    """Deterministically finds matching OCR detection comparing detected_value and evidence with OCR text."""
+    if not ocr_lines:
+        return None, None
+
+    det_str = (detected_value or "").strip()
+    ev_str = (evidence or "").strip()
+
+    det_lower = det_str.lower()
+    ev_lower = ev_str.lower()
+
+    # Rule 7: Missing declarations must have image_index=None, bbox=None
+    if det_lower in ("not detected", "missing", "not applicable", "") and ev_lower in ("evidence not available.", "not detected", "missing", ""):
+        return None, None
+    if ev_lower == "evidence not available." and ("missing" in det_lower or "not detected" in det_lower):
+        return None, None
+
+    def norm(s: str) -> str:
+        cleaned = re.sub(r"[^a-zA-Z0-9\s]", " ", s.lower())
+        return " ".join(cleaned.split())
+
+    norm_det = norm(det_str)
+    norm_ev = norm(ev_str)
+
+    det_tokens = [
+        tok for tok in norm_det.split()
+        if len(tok) >= 2 and tok not in ("detected", "not", "found", "missing", "brand", "generic", "name", "address", "valid", "date", "expired", "details", "contact")
+    ]
+    ev_tokens = [
+        tok for tok in norm_ev.split()
+        if len(tok) >= 2 and tok not in ("evidence", "available", "not", "found", "details", "name", "address", "tel", "email", "addr")
+    ]
+
+    best_match = None
+    best_score = 0
+
+    for item in ocr_lines:
+        ocr_text = item.get("text", "")
+        if not ocr_text:
+            continue
+        norm_ocr = norm(ocr_text)
+        if not norm_ocr:
+            continue
+
+        if "not printed" in norm_ocr or "not available" in norm_ocr or "not explicitly stated" in norm_ocr:
+            continue
+
+        score = 0
+
+        # Exact match
+        if norm_ocr == norm_det and len(norm_det) >= 2:
+            score = 100
+        elif norm_ocr == norm_ev and len(norm_ev) >= 2:
+            score = 95
+        # Substring match
+        elif len(norm_ocr) >= 3 and (norm_ocr in norm_ev or norm_ocr in norm_det):
+            score = 80 + len(norm_ocr)
+        elif len(norm_det) >= 3 and norm_det in norm_ocr:
+            score = 75 + len(norm_det)
+        else:
+            ocr_tokens = set(norm_ocr.split())
+            matched_det = [t for t in det_tokens if t in ocr_tokens]
+            matched_ev = [t for t in ev_tokens if t in ocr_tokens]
+            if matched_det:
+                score = 50 + len(matched_det) * 10
+            elif matched_ev:
+                score = 40 + len(matched_ev) * 10
+
+        if score > best_score:
+            best_score = score
+            best_match = item
+
+    if best_match and best_score >= 40:
+        return best_match.get("image_index", 1), best_match.get("bbox")
+
+    return None, None
+
+
+def attach_ocr_metadata(func):
+    """Decorator that deterministically attaches matching OCR bounding box and image_index to RuleResult."""
+    @functools.wraps(func)
+    def wrapper(product: ProductData, *args, **kwargs) -> RuleResult:
+        res = func(product, *args, **kwargs)
+        if isinstance(res, RuleResult) and res.bbox is None and res.image_index is None:
+            ocr_lines = get_ocr_lines_from_product(product)
+            img_idx, bbox = find_matching_ocr_detection(
+                detected_value=res.detected_value,
+                evidence=res.evidence,
+                ocr_lines=ocr_lines,
+            )
+            res.image_index = img_idx
+            res.bbox = bbox
+        return res
+    return wrapper
+
+
+@attach_ocr_metadata
 def check_lm001_manufacturer(product: ProductData) -> RuleResult:
     """LM-001 — Manufacturer / Packer / Importer Details"""
     mfg = product.manufacturer
@@ -70,6 +208,7 @@ def check_lm001_manufacturer(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm002_country_of_origin(product: ProductData) -> RuleResult:
     """LM-002 — Country of Origin (Deterministic Four-State Safeguard)"""
     country = product.country_of_origin.strip() if product.country_of_origin else None
@@ -145,6 +284,7 @@ def check_lm002_country_of_origin(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm003_generic_name(product: ProductData) -> RuleResult:
     """LM-003 — Generic Product Name"""
     generic = product.generic_name.strip() if product.generic_name else None
@@ -186,6 +326,7 @@ def check_lm003_generic_name(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm004_net_quantity(product: ProductData) -> RuleResult:
     """LM-004 — Net Quantity"""
     qty = product.quantity
@@ -230,6 +371,7 @@ def check_lm004_net_quantity(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm005_manufacture_date(product: ProductData) -> RuleResult:
     """LM-005 — Manufacture / Packing Date"""
     dates = product.dates
@@ -265,7 +407,10 @@ def check_lm005_manufacture_date(product: ProductData) -> RuleResult:
             )
 
     # Check for ambiguous evidence in raw_evidence (e.g. keywords present but date unreadable)
-    raw_text = " ".join(product.raw_evidence).lower() if product.raw_evidence else ""
+    raw_text = " ".join(
+        item if isinstance(item, str) else (item.get("text", "") if isinstance(item, dict) else str(item))
+        for item in product.raw_evidence
+    ).lower() if product.raw_evidence else ""
     if re.search(r"\b(?:mfg|pkd|packing|manufacture|date\s*of\s*mfg)\b", raw_text) and not re.search(r"not\s+(?:printed|available|stated)", raw_text):
         return RuleResult(
             rule_id="LM-005",
@@ -290,6 +435,7 @@ def check_lm005_manufacture_date(product: ProductData) -> RuleResult:
     )
 
 
+@attach_ocr_metadata
 def check_lm006_best_before(product: ProductData) -> RuleResult:
     """LM-006 — Best Before / Use By / Expiry Date (Inspection Date & Duration Aware)"""
     dates = product.dates
@@ -488,6 +634,7 @@ def check_lm006_best_before(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm007_mrp(product: ProductData) -> RuleResult:
     """LM-007 — Maximum Retail Price (MRP)"""
     mrp = product.mrp
@@ -531,6 +678,7 @@ def check_lm007_mrp(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm008_mrp_tax_inclusive(product: ProductData) -> RuleResult:
     """LM-008 — MRP Tax-Inclusive Indication (Fuzzy Wording Match Safeguard)"""
     mrp = product.mrp
@@ -584,6 +732,7 @@ def check_lm008_mrp_tax_inclusive(product: ProductData) -> RuleResult:
         )
 
 
+@attach_ocr_metadata
 def check_lm009_consumer_care(product: ProductData) -> RuleResult:
     """LM-009 — Consumer Care Details"""
     cc = product.consumer_care

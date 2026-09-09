@@ -106,6 +106,8 @@ class RuleResult(BaseModel):
     evidence: str = "Evidence not available."
     reason: str
     recommendation: Optional[str] = None
+    image_index: Optional[int] = None
+    bbox: Optional[Dict[str, Any]] = None
 
 
 class InspectionSummary(BaseModel):
@@ -146,6 +148,7 @@ class InspectionResponse(BaseModel):
     execution_time_ms: Optional[float] = None
     timings: Optional[Dict[str, Any]] = None
     image_metadata: Optional[ImageQualityInfo] = None
+    ocr_detections: Optional[List[Dict[str, Any]]] = None
 
 
 # Backward compatibility aliases

@@ -1,7 +1,8 @@
 import os
+import inspect
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from app.schemas import InspectionResponse, ReportData
 from app.services.compliance_service import run_inspection
@@ -21,41 +22,62 @@ def health_check():
 
 @router.post("/analyze", response_model=InspectionResponse)
 async def analyze_package(
-    image: Optional[UploadFile] = File(None),
+    images: Optional[List[UploadFile]] = File(None),
+    image: Optional[List[UploadFile]] = File(None),
     category: Optional[str] = Form("Auto Detect"),
     demo_sample: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     """
     Primary endpoint for Package Label Compliance Screening.
-    Real uploaded image -> Pillow validation -> PaddleOCR -> Deterministic Parser
+    Supports single or multiple package label images.
+    Real uploaded image(s) -> Pillow validation -> PaddleOCR -> Deterministic Parser
     -> SQLite-backed Rule Engine (LM-001..LM-009) -> InspectionResponse.
     """
-    image_bytes = None
-    if image and image.filename:
-        # Validate MIME type and file extension
-        content_type = (image.content_type or "").split(";")[0].strip().lower()
-        allowed_types = {"image/jpeg", "image/png", "image/webp", "image/jpg", "image/bmp"}
-        filename_ext = os.path.splitext(image.filename)[1].lower()
-        allowed_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+    upload_files: List[UploadFile] = []
+    # 1. Primary multi-image collection from "images" field
+    if images:
+        upload_files.extend([f for f in images if f and f.filename])
+
+    # 2. Check "image" field: if images was not provided, or append any distinct files
+    if image:
+        for f in image:
+            if f and f.filename:
+                if not any(existing.filename == f.filename for existing in upload_files):
+                    upload_files.append(f)
+
+    logger.info(f"Received {len(upload_files)} uploaded image(s) for inspection: {[f.filename for f in upload_files]}")
+
+    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/jpg", "image/bmp"}
+    allowed_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+
+    images_bytes: List[bytes] = []
+    for upload_file in upload_files:
+        content_type = (upload_file.content_type or "").split(";")[0].strip().lower()
+        filename_ext = os.path.splitext(upload_file.filename or "")[1].lower()
         if content_type not in allowed_types and filename_ext not in allowed_exts:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unsupported image format. Please upload JPG, PNG, WEBP, or BMP format.",
+                detail=f"Unsupported image format for '{upload_file.filename}'. Please upload JPG, PNG, WEBP, or BMP format.",
             )
-        image_bytes = await image.read()
+        file_bytes = await upload_file.read()
+        if file_bytes:
+            images_bytes.append(file_bytes)
 
     # Normalize empty string demo_sample to None
     if demo_sample == "":
         demo_sample = None
 
-    if not image_bytes and not demo_sample:
+    if not images_bytes and not demo_sample:
         # Default to compliant sample if neither image nor demo flag provided
         demo_sample = "compliant"
 
     try:
+        primary_image_bytes = images_bytes[0] if images_bytes else None
+
         inspection = run_inspection(
-            image_bytes=image_bytes,
+            image_bytes=primary_image_bytes,
+            images_bytes=images_bytes,
             category_hint=category,
             demo_sample=demo_sample,
             db=db,

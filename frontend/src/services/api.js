@@ -2,11 +2,24 @@ import { saveInspectionToHistory } from "./storage";
 
 const API_BASE_URL = "/api/inspection";
 
-export async function analyzePackageImage({ file, category, demoSample }) {
+export async function analyzePackageImage({ file, files, category, demoSample }) {
   const formData = new FormData();
-  if (file) {
-    formData.append("image", file);
+
+  // Support both new files array and legacy single file parameter
+  const fileList = Array.isArray(files) && files.length > 0
+    ? files
+    : (file ? [file] : []);
+
+  if (fileList.length > 0) {
+    // Append all files using field name "images" for multi-image support
+    fileList.forEach((f) => {
+      formData.append("images", f);
+    });
+
+    // Also preserve single-file "image" field for backward compatibility
+    formData.append("image", fileList[0]);
   }
+
   if (category) {
     formData.append("category", category);
   }

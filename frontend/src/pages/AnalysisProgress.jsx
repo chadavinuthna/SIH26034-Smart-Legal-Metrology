@@ -37,14 +37,20 @@ export default function AnalysisProgress({ uploadData, onAnalysisSuccess, onComp
     }, 450);
 
     if (uploadData) {
+      const files = uploadData.files && uploadData.files.length > 0
+        ? uploadData.files
+        : (uploadData.file ? [uploadData.file] : []);
+
       analyzePackageImage({
-        file: uploadData.file,
+        files,
+        file: uploadData.file || files[0] || null,
         category: uploadData.category,
         demoSample: uploadData.demoSample,
       })
         .then((result) => {
           if (isCancelled) return;
-          result.previewUrl = uploadData.previewUrl;
+          result.previewUrls = uploadData.previewUrls || (uploadData.previewUrl ? [uploadData.previewUrl] : []);
+          result.previewUrl = uploadData.previewUrl || result.previewUrls[0] || null;
           isFinishedRef.current = true;
           clearInterval(stageTimer);
           setCurrentStage(stages.length);

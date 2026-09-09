@@ -277,6 +277,7 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
       {/* Expandable Check Detail Modal */}
       <CheckDetailModal
         check={selectedCheck}
+        inspection={inspection}
         onClose={() => setSelectedCheck(null)}
       />
     </div>

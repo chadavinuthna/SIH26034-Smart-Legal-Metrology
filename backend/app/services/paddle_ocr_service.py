@@ -1053,39 +1053,71 @@ class PaddleOCRService:
                 raw_output = engine.ocr(np_image)
                 if raw_output and raw_output[0] is not None:
                     detections = raw_output[0]
-                    for idx, item in enumerate(detections):
-                        try:
-                            poly_coords, (text_val, conf_val) = item
-                            poly_list = (
-                                poly_coords.tolist()
-                                if hasattr(poly_coords, "tolist")
-                                else list(poly_coords)
-                            )
-                            x_coords = [float(p[0]) for p in poly_list]
-                            y_coords = [float(p[1]) for p in poly_list]
-
-                            bbox = OCRBoundingBox(
-                                polygon=[[float(p[0]), float(p[1])] for p in poly_list],
-                                x_min=min(x_coords),
-                                y_min=min(y_coords),
-                                x_max=max(x_coords),
-                                y_max=max(y_coords),
-                            )
-
-                            cleaned_text = str(text_val).strip()
-                            float_conf = float(conf_val)
-
-                            line_items.append(
-                                OCRLineItem(
-                                    line_index=len(line_items),
-                                    text=cleaned_text,
-                                    confidence=float_conf,
-                                    bbox=bbox,
+                    if isinstance(detections, dict):
+                        texts = detections.get("rec_texts", [])
+                        scores = detections.get("rec_scores", [])
+                        polys = detections.get("rec_polys", detections.get("dt_polys", []))
+                        for text_val, score_val, poly_coords in zip(texts, scores, polys):
+                            try:
+                                poly_list = (
+                                    poly_coords.tolist()
+                                    if hasattr(poly_coords, "tolist")
+                                    else list(poly_coords)
                                 )
-                            )
-                            confidences.append(float_conf)
-                        except Exception as parse_err:
-                            logger.warning(f"[PaddleOCR] Error parsing ocr detection item #{idx}: {parse_err}")
+                                x_coords = [float(p[0]) for p in poly_list]
+                                y_coords = [float(p[1]) for p in poly_list]
+                                bbox = OCRBoundingBox(
+                                    polygon=[[float(p[0]), float(p[1])] for p in poly_list],
+                                    x_min=min(x_coords),
+                                    y_min=min(y_coords),
+                                    x_max=max(x_coords),
+                                    y_max=max(y_coords),
+                                )
+                                line_items.append(
+                                    OCRLineItem(
+                                        line_index=len(line_items),
+                                        text=str(text_val).strip(),
+                                        confidence=float(score_val),
+                                        bbox=bbox,
+                                    )
+                                )
+                                confidences.append(float(score_val))
+                            except Exception as parse_err:
+                                logger.warning(f"[PaddleOCR] Error parsing ocr dict item: {parse_err}")
+                    elif isinstance(detections, (list, tuple)):
+                        for idx, item in enumerate(detections):
+                            try:
+                                poly_coords, (text_val, conf_val) = item
+                                poly_list = (
+                                    poly_coords.tolist()
+                                    if hasattr(poly_coords, "tolist")
+                                    else list(poly_coords)
+                                )
+                                x_coords = [float(p[0]) for p in poly_list]
+                                y_coords = [float(p[1]) for p in poly_list]
+
+                                bbox = OCRBoundingBox(
+                                    polygon=[[float(p[0]), float(p[1])] for p in poly_list],
+                                    x_min=min(x_coords),
+                                    y_min=min(y_coords),
+                                    x_max=max(x_coords),
+                                    y_max=max(y_coords),
+                                )
+
+                                cleaned_text = str(text_val).strip()
+                                float_conf = float(conf_val)
+
+                                line_items.append(
+                                    OCRLineItem(
+                                        line_index=len(line_items),
+                                        text=cleaned_text,
+                                        confidence=float_conf,
+                                        bbox=bbox,
+                                    )
+                                )
+                                confidences.append(float_conf)
+                            except Exception as parse_err:
+                                logger.warning(f"[PaddleOCR] Error parsing ocr detection item #{idx}: {parse_err}")
             except Exception as ocr_err:
                 logger.error(f"[PaddleOCR] ocr() invocation failed: {ocr_err}")
 
@@ -1107,6 +1139,7 @@ class PaddleOCRService:
         self,
         image: Image.Image,
         category_hint: Optional[str] = None,
+        image_index: int = 1,
     ) -> ProductData:
         """Compatible extraction interface matching AIService.
 
@@ -1173,16 +1206,32 @@ class PaddleOCRService:
         )
 
         # 3. Build Raw Evidence Array (strings compatible with ProductData and frontend display)
-        raw_evidence_strings: List[str] = []
+        raw_evidence_items: List[Any] = []
 
         # Add field-specific evidence for statutory rule verification (omit placeholders)
         for ev in [ev_generic, ev_qty, ev_mrp, ev_mfg, ev_care, ev_coo] + ev_names + ev_dates:
             if ev is not None and not is_placeholder(ev.value):
-                raw_evidence_strings.append(f"{ev.field}: {ev.value} ({ev.evidence})")
+                raw_evidence_items.append(f"{ev.field}: {ev.value} ({ev.evidence})")
 
         # Append original OCR lines for full auditability
         for line in lines:
-            raw_evidence_strings.append(line.text)
+            raw_evidence_items.append(line.text)
+
+        # Append structured OCR line dictionaries preserving bounding boxes and spatial metadata
+        for line in lines:
+            raw_evidence_items.append({
+                "type": "ocr_line",
+                "text": line.text,
+                "confidence": round(float(line.confidence), 4),
+                "image_index": image_index,
+                "bbox": {
+                    "x_min": line.bbox.x_min,
+                    "y_min": line.bbox.y_min,
+                    "x_max": line.bbox.x_max,
+                    "y_max": line.bbox.y_max,
+                    "polygon": line.bbox.polygon,
+                },
+            })
 
         # 4. Infer statutory metadata for rule engine
         import_status = ImportStatusEnum.UNCERTAIN
@@ -1226,7 +1275,7 @@ class PaddleOCRService:
             is_imported=is_imported,
             date_applicability=date_applicability,
             package_type="normal",
-            raw_evidence=raw_evidence_strings,
+            raw_evidence=raw_evidence_items,
         )
         self._last_parse_time_ms = (time.time() - t_parse_start) * 1000.0
         self.last_timings = {

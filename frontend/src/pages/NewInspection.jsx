@@ -14,11 +14,13 @@ import {
   Camera,
   AlertCircle,
   X,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 export default function NewInspection({ onStartAnalysis }) {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [category, setCategory] = useState("Auto Detect");
   const [demoSample, setDemoSample] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -47,28 +49,74 @@ export default function NewInspection({ onStartAnalysis }) {
     };
   }, [cameraStream]);
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
+  const addFiles = (filesToAdd) => {
+    if (!filesToAdd || filesToAdd.length === 0) return;
+
+    setCameraError(null);
+
+    const incoming = Array.from(filesToAdd);
+    // Validate image format and filter duplicate files based on name, size, and lastModified
+    const validFiles = incoming.filter((file) => {
+      const isImg =
+        file.type?.startsWith("image/") ||
+        /\.(jpe?g|png|webp|bmp)$/i.test(file.name);
+      if (!isImg) return false;
+
+      const isDup = selectedFiles.some(
+        (existing) =>
+          existing.name === file.name &&
+          existing.size === file.size &&
+          existing.lastModified === file.lastModified
+      );
+      return !isDup;
+    });
+
+    if (validFiles.length === 0) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
+
+    const isSwitchingFromDemo = Boolean(demoSample);
+    if (isSwitchingFromDemo) {
+      setDemoSample(null);
+    }
+
+    const readPromises = validFiles.map(
+      (file) =>
+        new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve({
+              id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+              file,
+              url: reader.result,
+              name: file.name,
+              size: file.size,
+            });
+          };
+          reader.readAsDataURL(file);
+        })
+    );
+
+    Promise.all(readPromises).then((newItems) => {
+      setSelectedFiles((prev) => (isSwitchingFromDemo ? [...validFiles] : [...prev, ...validFiles]));
+      setImagePreviews((prev) => (isSwitchingFromDemo ? [...newItems] : [...prev, ...newItems]));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
   };
 
-  const processFile = (file) => {
-    setSelectedFile(file);
-    setDemoSample(null);
-    setCameraError(null);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+  const handleFileSelect = (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      addFiles(files);
+    }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    if (e.dataTransfer.files?.[0]) {
-      processFile(e.dataTransfer.files[0]);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      addFiles(files);
     }
   };
 
@@ -79,13 +127,22 @@ export default function NewInspection({ onStartAnalysis }) {
   const handleSelectDemoSample = (sampleType) => {
     if (isCameraOpen) closeCamera();
     setDemoSample(sampleType);
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setCameraError(null);
-    if (sampleType === "compliant") {
-      setImagePreview(demoBiscuitsSvg);
-    } else {
-      setImagePreview(demoSnackSvg);
-    }
+    const preview = sampleType === "compliant" ? demoBiscuitsSvg : demoSnackSvg;
+    const sampleName =
+      sampleType === "compliant"
+        ? "demo_biscuits_package.svg"
+        : "demo_snack_package.svg";
+    setImagePreviews([
+      {
+        id: `demo-${sampleType}`,
+        file: null,
+        url: preview,
+        name: sampleName,
+        size: null,
+      },
+    ]);
   };
 
   const openCamera = async () => {
@@ -183,7 +240,7 @@ export default function NewInspection({ onStartAnalysis }) {
           );
 
           closeCamera();
-          processFile(file);
+          addFiles([file]);
         },
         "image/jpeg",
         0.92
@@ -194,10 +251,32 @@ export default function NewInspection({ onStartAnalysis }) {
     }
   };
 
-  const handleRemove = () => {
+  const handleRemove = (indexToRemove) => {
     if (isCameraOpen) closeCamera();
-    setSelectedFile(null);
-    setImagePreview(null);
+    if (demoSample) {
+      handleClearAll();
+      return;
+    }
+
+    const itemToRemove = imagePreviews[indexToRemove];
+    const newPreviews = imagePreviews.filter((_, idx) => idx !== indexToRemove);
+    const newFiles = itemToRemove?.file
+      ? selectedFiles.filter((f) => f !== itemToRemove.file)
+      : selectedFiles.filter((_, idx) => idx !== indexToRemove);
+
+    setImagePreviews(newPreviews);
+    setSelectedFiles(newFiles);
+    setCameraError(null);
+
+    if (newPreviews.length === 0) {
+      handleClearAll();
+    }
+  };
+
+  const handleClearAll = () => {
+    if (isCameraOpen) closeCamera();
+    setSelectedFiles([]);
+    setImagePreviews([]);
     setDemoSample(null);
     setCameraError(null);
     if (fileInputRef.current) {
@@ -207,12 +286,16 @@ export default function NewInspection({ onStartAnalysis }) {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!imagePreview && !demoSample) return;
+    if (imagePreviews.length === 0 && !demoSample) return;
+    const filesToSend = imagePreviews.map((p) => p.file).filter(Boolean);
     onStartAnalysis({
-      file: selectedFile,
+      files: filesToSend.length > 0 ? filesToSend : selectedFiles,
+      previewUrls: imagePreviews.map((p) => p.url),
+      // Backward compatibility for existing parent/services expecting a single file
+      file: (filesToSend.length > 0 ? filesToSend[0] : selectedFiles[0]) || null,
+      previewUrl: imagePreviews[0]?.url || null,
       category,
       demoSample,
-      previewUrl: imagePreview,
     });
   };
 
@@ -307,10 +390,30 @@ export default function NewInspection({ onStartAnalysis }) {
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Package Label Image Upload & Camera Capture
-          </label>
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Package Label Images (Same Product)
+            </label>
+            {imagePreviews.length > 0 && (
+              <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200 self-start sm:self-auto">
+                {imagePreviews.length} {imagePreviews.length === 1 ? "Image" : "Images"} Attached
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-slate-500 font-medium">
+            Upload all sides and panels of the <strong>same packaged product</strong> (e.g. Front, Back, MRP/Date side panel, Nutrition declaration) to extract and combine compliance declarations.
+          </p>
+
+          {/* Always mounted hidden multi-file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+          />
 
           {/* Live Camera Viewfinder */}
           {isCameraOpen ? (
@@ -345,7 +448,7 @@ export default function NewInspection({ onStartAnalysis }) {
                 </button>
               </div>
             </div>
-          ) : !imagePreview ? (
+          ) : imagePreviews.length === 0 ? (
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -357,10 +460,10 @@ export default function NewInspection({ onStartAnalysis }) {
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-bold text-slate-800">
-                  Drag & drop package label image here, or use the options below
+                  Drag &amp; drop package label image(s) here, or browse files
                 </p>
                 <p className="text-xs text-slate-400">
-                  Supports JPG, PNG, WEBP, BMP up to 10MB
+                  Select one or multiple images for the same product (JPG, PNG, WEBP, BMP up to 10MB each)
                 </p>
               </div>
 
@@ -375,7 +478,7 @@ export default function NewInspection({ onStartAnalysis }) {
                   className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>Browse Image</span>
+                  <span>Browse Images</span>
                 </button>
 
                 <button
@@ -390,22 +493,120 @@ export default function NewInspection({ onStartAnalysis }) {
                   <span>Capture Photo</span>
                 </button>
               </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
             </div>
           ) : (
-            <ImageQualityPreview
-              imageSrc={imagePreview}
-              fileName={selectedFile?.name || (demoSample === "compliant" ? "demo_biscuits_package.svg" : "demo_snack_package.svg")}
-              fileSize={selectedFile?.size}
-              onRemove={handleRemove}
-            />
+            <div className="space-y-4">
+              {/* Product Multi-Image Toolbar */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-slate-700 font-medium">
+                  <FileCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>
+                    Product images: <strong>{imagePreviews.length} {imagePreviews.length === 1 ? "panel" : "panels"} ready</strong> for Legal Metrology screening.
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer text-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Image</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={openCamera}
+                    className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold rounded-lg shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer text-xs"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Take Photo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleClearAll}
+                    className="px-2.5 py-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-semibold text-xs flex items-center gap-1 cursor-pointer"
+                    title="Remove all uploaded images"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Gallery Grid */}
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+              >
+                {imagePreviews.map((img, idx) => (
+                  <div
+                    key={img.id || idx}
+                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs hover:border-blue-400 transition-all flex flex-col group"
+                  >
+                    {/* Card Header */}
+                    <div className="px-3 py-2 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold text-blue-900 bg-blue-100/70 px-2 py-0.5 rounded-md border border-blue-200/60">
+                        Image {idx + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(idx)}
+                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        title={`Remove Image ${idx + 1}`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Thumbnail Preview */}
+                    <div className="w-full aspect-4/3 bg-slate-950 flex items-center justify-center p-2 relative overflow-hidden">
+                      <img
+                        src={img.url}
+                        alt={`Product Image ${idx + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* File Caption & Status */}
+                    <div className="p-3 bg-white space-y-1 mt-auto border-t border-slate-100">
+                      <p className="text-xs font-bold text-slate-800 truncate" title={img.name}>
+                        {img.name || `Package Image ${idx + 1}`}
+                      </p>
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>{img.size ? `${(img.size / 1024).toFixed(1)} KB` : "Demo Mockup"}</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Ready</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Inline "Add Another Image" Tile */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/50 hover:bg-blue-50/30 transition-all min-h-[200px] space-y-2 group"
+                  title="Click or drop another image here"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors shadow-2xs">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
+                      + Add Another Image
+                    </p>
+                    <p className="text-[11px] text-slate-400 max-w-[180px]">
+                      Upload or drop another side / panel of this same product
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
@@ -434,15 +635,19 @@ export default function NewInspection({ onStartAnalysis }) {
         <div className="pt-4 border-t border-slate-100 flex justify-end">
           <button
             type="submit"
-            disabled={!imagePreview && !demoSample}
+            disabled={imagePreviews.length === 0 && !demoSample}
             className={`px-8 py-3.5 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2.5 transition-all ${
-              imagePreview || demoSample
+              imagePreviews.length > 0 || demoSample
                 ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40 hover:shadow-blue-900/60 cursor-pointer"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
             }`}
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>Start Compliance Analysis</span>
+            <span>
+              {imagePreviews.length > 1
+                ? `Start Compliance Analysis (${imagePreviews.length} Images)`
+                : "Start Compliance Analysis"}
+            </span>
           </button>
         </div>
       </form>
