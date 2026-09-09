@@ -20,9 +20,11 @@ async def analyze_package(
     category: Optional[str] = Form("Auto Detect"),
     demo_sample: Optional[str] = Form(None),
     db: Session = Depends(get_db),
-):    """
+):
+    """
     Primary endpoint for Package Label Compliance Screening.
-    AI extracts declarations -> Deterministic rule engine calculates compliance status.
+    Real uploaded image -> Pillow validation -> PaddleOCR -> Deterministic Parser
+    -> SQLite-backed Rule Engine (LM-001..LM-009) -> InspectionResponse.
     """
     image_bytes = None
     if image and image.filename:
@@ -34,6 +36,10 @@ async def analyze_package(
                 detail="Unsupported image format. Please upload JPG, PNG, WEBP, or BMP format.",
             )
         image_bytes = await image.read()
+
+    # Normalize empty string demo_sample to None
+    if demo_sample == "":
+        demo_sample = None
 
     if not image_bytes and not demo_sample:
         # Default to compliant sample if neither image nor demo flag provided
@@ -52,6 +58,32 @@ async def analyze_package(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to analyze this package image. Please upload a clearer package label image.",
+        )
+
+
+@router.post("/demo-analyze", response_model=InspectionResponse)
+async def demo_analyze_package(
+    category: Optional[str] = Form("Auto Detect"),
+    demo_sample: Optional[str] = Form("compliant"),
+    db: Session = Depends(get_db),
+):
+    """
+    Dedicated demo-only inspection endpoint.
+    Always uses synthetic/demo data and returns is_demo = True.
+    """
+    try:
+        inspection = run_inspection(
+            image_bytes=None,
+            category_hint=category,
+            demo_sample=demo_sample or "compliant",
+            db=db,
+        )
+        return inspection
+    except Exception as e:
+        print(f"Error during demo inspection: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing demo inspection.",
         )
 
 

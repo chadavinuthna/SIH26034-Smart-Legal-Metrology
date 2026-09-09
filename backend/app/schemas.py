@@ -112,3 +112,20 @@ class InspectionResponse(BaseModel):
         "Prototype screening result. Final regulatory determination should be verified "
         "by an authorized Legal Metrology officer and applicable current regulations."
     )
+
+
+# Backward compatibility aliases
+ManufacturerInfo = ManufacturerData
+QuantityInfo = QuantityData
+MRPInfo = MrpData
+DateInfo = DatesData
+ConsumerCareInfo = ConsumerCareData
+ComplianceStatus = RuleStatusEnum
+OverallStatus = OverallStatusEnum
+
+
+class EvidenceItem(BaseModel):
+    field: str
+    value: Optional[str] = None
+    evidence: str
+
