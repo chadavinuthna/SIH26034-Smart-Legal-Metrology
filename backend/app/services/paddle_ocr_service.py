@@ -6,6 +6,7 @@ parsing layer that converts OCRLineItems into structured ProductData schemas.
 """
 import os
 import re
+import time
 import logging
 from typing import Optional, List, Any, Dict, Tuple
 import numpy as np
@@ -88,6 +89,8 @@ VALID_SI_UNITS: Dict[str, str] = {
     "ltr": "l",
     "litre": "l",
     "litres": "l",
+    "liter": "l",
+    "liters": "l",
     "mg": "mg",
     "milligram": "mg",
     "milligrams": "mg",
@@ -105,12 +108,36 @@ VALID_SI_UNITS: Dict[str, str] = {
     "units": "N",
     "pcs": "N",
     "pieces": "N",
+    "pack": "N",
+    "packs": "N",
+    "pk": "N",
+    "ct": "N",
+    "count": "N",
 }
 
 KNOWN_COUNTRIES = {
     "india", "china", "thailand", "vietnam", "usa", "united states",
     "germany", "japan", "uk", "united kingdom", "bangladesh", "nepal",
     "sri lanka", "italy", "france", "indonesia", "malaysia",
+}
+
+COMMON_COMMODITIES = [
+    "biscuits", "biscuit", "cookies", "cookie", "soap", "shampoo", "atta", "flour",
+    "detergent", "tea", "coffee", "oil", "snacks", "snack", "chips", "namkeen",
+    "rice", "noodles", "noodle", "pasta", "toothpaste", "ghee", "butter", "milk",
+    "spices", "spice", "masala", "wafers", "wafer", "cleaner", "sanitizer", "lotion",
+    "cream", "face wash", "cereal", "oats", "pulses", "dal", "sugar", "salt", "juice",
+    "beverage", "water", "pickle", "sauce", "ketchup", "confectionery", "candy",
+    "chocolate", "chocolates", "bread", "cake", "rusk", "washing powder",
+]
+
+INDIAN_STATES = {
+    "andhra pradesh", "arunachal pradesh", "assam", "bihar", "chhattisgarh",
+    "goa", "gujarat", "haryana", "himachal pradesh", "jharkhand", "karnataka",
+    "kerala", "madhya pradesh", "maharashtra", "manipur", "meghalaya", "mizoram",
+    "nagaland", "odisha", "punjab", "rajasthan", "sikkim", "tamil nadu",
+    "telangana", "tripura", "uttar pradesh", "uttarakhand", "west bengal",
+    "delhi", "chandigarh", "puducherry", "jammu", "kashmir", "ladakh",
 }
 
 
@@ -164,7 +191,7 @@ def is_placeholder(val: Optional[str]) -> bool:
 
     # Strip label prefixes (e.g., "Address: [NOT PRINTED ON PACKAGE LABEL]")
     stripped = LABEL_PREFIX_STRIP_REGEX.sub("", inner).strip("[](){}<>\"' ").strip()
-    if not stripped or PLACEHOLDER_REGEX.match(stripped):
+    if stripped and PLACEHOLDER_REGEX.match(stripped):
         return True
 
     # Bracketed placeholder phrase anywhere in string
@@ -208,31 +235,56 @@ class OCRProductDataParser:
     """Deterministic, regex & spatial-proximity parser converting OCRLineItems into ProductData."""
 
     @staticmethod
-    def _is_horizontally_overlapping(box1: OCRBoundingBox, box2: OCRBoundingBox, tolerance: float = 60.0) -> bool:
-        """Check if two bounding boxes share horizontal overlap or proximity."""
+    def _is_horizontally_overlapping(box1: OCRBoundingBox, box2: OCRBoundingBox, tolerance: Optional[float] = None) -> bool:
+        """Check if two bounding boxes share horizontal overlap or proximity (resolution-aware)."""
+        if tolerance is None:
+            tolerance = max(40.0, min(box1.width, box2.width) * 0.4)
         return not (box2.x_max < box1.x_min - tolerance or box2.x_min > box1.x_max + tolerance)
 
     @staticmethod
     def _find_spatially_below(
         header_box: OCRBoundingBox,
         lines: List[OCRLineItem],
-        max_y_dist: float = 160.0,
+        max_multiplier: float = 3.5,
     ) -> List[OCRLineItem]:
-        """Find candidate lines located directly below a header box within max_y_dist."""
+        """Find candidate lines located directly below a header box dynamically proportional to line height."""
+        ref_h = max(header_box.height, 14.0)
+        max_y_dist = max(ref_h * max_multiplier, 120.0)
         candidates = []
         for line in lines:
-            # Must be vertically below header
-            if (line.bbox.y_min >= header_box.y_max - 10.0) and (line.bbox.y_min <= header_box.y_max + max_y_dist):
+            if (line.bbox.y_min >= header_box.y_max - (ref_h * 0.3)) and (line.bbox.y_min <= header_box.y_max + max_y_dist):
                 if OCRProductDataParser._is_horizontally_overlapping(header_box, line.bbox):
                     candidates.append(line)
-        # Sort by vertical distance
         candidates.sort(key=lambda item: item.bbox.y_min)
         return candidates
 
-    def parse_generic_name(self, lines: List[OCRLineItem]) -> Tuple[Optional[str], Optional[EvidenceItem]]:
+    @staticmethod
+    def _find_spatially_right(
+        header_box: OCRBoundingBox,
+        lines: List[OCRLineItem],
+        max_multiplier: float = 6.0,
+    ) -> List[OCRLineItem]:
+        """Find candidate lines located to the right of a box on approximately the same horizontal line."""
+        ref_h = max(header_box.height, 14.0)
+        max_x_dist = max(ref_h * max_multiplier, 320.0)
+        candidates = []
+        for line in lines:
+            v_overlap = not (line.bbox.y_max < header_box.y_min - (ref_h * 0.5) or line.bbox.y_min > header_box.y_max + (ref_h * 0.5))
+            if v_overlap and (line.bbox.x_min >= header_box.x_min) and (line.bbox.x_min <= header_box.x_max + max_x_dist):
+                if line.bbox != header_box:
+                    candidates.append(line)
+        candidates.sort(key=lambda item: item.bbox.x_min)
+        return candidates
+
+    def parse_generic_name(
+        self,
+        lines: List[OCRLineItem],
+        product_name_hint: Optional[str] = None,
+        brand_name_hint: Optional[str] = None,
+    ) -> Tuple[Optional[str], Optional[EvidenceItem]]:
         """Extract generic/commodity name using explicit declarations or recognized terms."""
         pattern = re.compile(
-            r"(?:Generic(?:\s+Commodity)?\s*Name|Commodity(?:\s*Name)?)\s*[:\-–]\s*(.+)",
+            r"(?:Generic(?:\s+Commodity)?\s*Name|Commodity(?:\s*Name)?|Common\s*Name)\s*[:\-–]\s*(.+)",
             re.IGNORECASE,
         )
         for line in lines:
@@ -241,7 +293,6 @@ class OCRProductDataParser:
             m = pattern.search(line.text)
             if m:
                 raw_val = m.group(1).strip()
-                # Clean up any trailing descriptions or pipes
                 clean_val = re.split(r"[|;,]", raw_val)[0].strip()
                 clean_val = clean_placeholder(clean_val)
                 if clean_val:
@@ -252,14 +303,27 @@ class OCRProductDataParser:
                     )
                     return clean_val, evidence
 
-        # Fallback: check for standalone commodity terms in non-header lines
-        common_commodities = ["Biscuits", "Cookies", "Soap", "Shampoo", "Atta", "Detergent", "Tea", "Coffee", "Oil", "Snacks"]
+        # Fallback 1: check for standalone or trailing commodity terms in lines (ignoring brand-only lines)
         for line in lines:
-            for com in common_commodities:
-                if re.fullmatch(com, line.text, re.IGNORECASE) and line.confidence >= 0.7:
-                    clean_com = clean_placeholder(com)
-                    if clean_com:
-                        return clean_com, EvidenceItem(field="generic_name", value=clean_com, evidence=line.text)
+            if line.confidence < 0.65 or is_placeholder(line.text):
+                continue
+            txt_clean = line.text.strip().lower()
+            if brand_name_hint and txt_clean == brand_name_hint.strip().lower():
+                continue
+            for com in COMMON_COMMODITIES:
+                if (txt_clean == com or txt_clean.endswith(f" {com}")) and len(line.text.split()) <= 4:
+                    std_val = com.capitalize()
+                    clean_val = clean_placeholder(std_val)
+                    if clean_val:
+                        return clean_val, EvidenceItem(field="generic_name", value=clean_val, evidence=line.text)
+
+        # Fallback 2: check if product_name_hint contains a known commodity
+        if product_name_hint:
+            p_lower = product_name_hint.lower()
+            for com in COMMON_COMMODITIES:
+                if re.search(r"\b" + re.escape(com) + r"\b", p_lower):
+                    std_val = com.capitalize()
+                    return std_val, EvidenceItem(field="generic_name", value=std_val, evidence=product_name_hint)
 
         return None, None
 
@@ -343,13 +407,12 @@ class OCRProductDataParser:
 
     def parse_quantity(self, lines: List[OCRLineItem]) -> Tuple[QuantityInfo, Optional[EvidenceItem]]:
         """Extract net quantity value, standardized SI unit, and raw text."""
-        # 1. Inline pattern: e.g., 'Net Quantity: 200 g' or 'Net Wt. 200g'
         inline_pattern = re.compile(
             r"(?:Net\s*(?:Quantity|Qty|Weight|Wt\.?)|Net)\s*[:\-–]?\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)",
             re.IGNORECASE,
         )
         for line in lines:
-            if line.confidence < 0.5:
+            if line.confidence < 0.5 or is_placeholder(line.text):
                 continue
             m = inline_pattern.search(line.text)
             if m:
@@ -366,11 +429,13 @@ class OCRProductDataParser:
         val_unit_pattern = re.compile(r"^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)$", re.IGNORECASE)
 
         for line in lines:
-            if line.confidence < 0.5:
+            if line.confidence < 0.5 or is_placeholder(line.text):
                 continue
             if header_pattern.search(line.text.strip()):
                 candidates = self._find_spatially_below(line.bbox, lines)
                 for cand in candidates:
+                    if is_placeholder(cand.text):
+                        continue
                     vm = val_unit_pattern.match(cand.text.strip())
                     if vm:
                         val = vm.group(1)
@@ -386,9 +451,9 @@ class OCRProductDataParser:
                             return q_info, evidence
 
         # 3. Direct standalone number + unit pattern if unambiguous
-        direct_pattern = re.compile(r"\b(\d+(?:\.\d+)?)\s*(kg|g|gm|gms|ml|l|ltr|mg|N|units?)\b", re.IGNORECASE)
+        direct_pattern = re.compile(r"\b(\d+(?:\.\d+)?)\s*(kg|g|gm|gms|ml|l|ltr|litre|liter|mg|N|U|units?|pcs|pieces?|packs?)\b", re.IGNORECASE)
         for line in lines:
-            if line.confidence < 0.6:
+            if line.confidence < 0.6 or is_placeholder(line.text):
                 continue
             m = direct_pattern.search(line.text)
             if m:
@@ -404,44 +469,66 @@ class OCRProductDataParser:
 
     def parse_mrp(self, lines: List[OCRLineItem]) -> Tuple[MRPInfo, Optional[EvidenceItem]]:
         """Extract MRP price value, currency, tax inclusivity clause, and verbatim text."""
-        # 1. Inline MRP pattern: e.g., 'MRP Rs. 80.00 (Incl. of all taxes)'
         inline_mrp_pattern = re.compile(
             r"(?:MRP|M\.R\.P\.?|Maximum\s+Retail\s+Price|Price)\s*[:\-–]?\s*(?:Rs\.?|INR|₹)?\s*(\d+(?:\.\d{1,2})?)",
             re.IGNORECASE,
         )
-        tax_incl_pattern = re.compile(r"incl(?:usive)?\.?\s*of\s*all\s*taxes|incl\.?\s*taxes", re.IGNORECASE)
+        tax_incl_pattern = re.compile(
+            r"incl(?:usive)?\.?\s*(?:of\s*)?all\s*taxes?|incl\.?\s*all\s*taxes?|incl\.?\s*taxes?|tax\s*inclusive|taxes?\s*included|mrp\s*incl\.?\s*taxes?|all\s*taxes?\s*incl(?:uded)?|tax\s*paid",
+            re.IGNORECASE,
+        )
         tax_excl_pattern = re.compile(r"excl(?:usive)?\.?\s*of\s*taxes|taxes\s*extra", re.IGNORECASE)
 
-        for line in lines:
-            if line.confidence < 0.5:
+        # 1. Inline MRP check
+        for idx, line in enumerate(lines):
+            if line.confidence < 0.5 or is_placeholder(line.text):
                 continue
             m = inline_mrp_pattern.search(line.text)
             if m:
                 price_val = m.group(1)
                 incl_tax = True if tax_incl_pattern.search(line.text) else (False if tax_excl_pattern.search(line.text) else None)
+                raw_txt = line.text
+
+                # If tax not on same line, inspect line immediately below or above within dynamic distance
+                if incl_tax is None:
+                    ref_h = max(line.bbox.height, 14.0)
+                    for adj_idx in [idx + 1, idx - 1]:
+                        if 0 <= adj_idx < len(lines):
+                            adj_line = lines[adj_idx]
+                            if abs(adj_line.bbox.y_min - line.bbox.y_max) <= ref_h * 2.5 or abs(line.bbox.y_min - adj_line.bbox.y_max) <= ref_h * 2.5:
+                                if tax_incl_pattern.search(adj_line.text):
+                                    incl_tax = True
+                                    raw_txt = f"{line.text} {adj_line.text}"
+                                    break
+                                elif tax_excl_pattern.search(adj_line.text):
+                                    incl_tax = False
+                                    raw_txt = f"{line.text} {adj_line.text}"
+                                    break
+
                 mrp_info = MRPInfo(
                     value=price_val,
                     currency="INR",
                     inclusive_of_taxes=incl_tax,
-                    raw_text=line.text,
+                    raw_text=raw_txt,
                 )
-                evidence = EvidenceItem(field="mrp", value=f"₹{price_val}", evidence=line.text)
+                evidence = EvidenceItem(field="mrp", value=f"₹{price_val}", evidence=raw_txt)
                 return mrp_info, evidence
 
         # 2. Header and Value split badge: 'MAXIMUM RETAIL PRICE' followed below by 'Rs. 80.00 (Incl. of all taxes)'
-        header_mrp_pattern = re.compile(r"^(?:MAXIMUM\s+RETAIL\s+PRICE|MRP|M\.R\.P\.?)$", re.IGNORECASE)
+        header_mrp_pattern = re.compile(r"^(?:MAXIMUM\s+RETAIL\s+PRICE|MRP|M\.R\.P\.?|PRICE)$", re.IGNORECASE)
         val_price_pattern = re.compile(r"(?:Rs\.?|INR|₹)?\s*(\d+(?:\.\d{1,2})?)", re.IGNORECASE)
 
         for line in lines:
-            if line.confidence < 0.5:
+            if line.confidence < 0.5 or is_placeholder(line.text):
                 continue
             if header_mrp_pattern.search(line.text.strip()):
                 candidates = self._find_spatially_below(line.bbox, lines)
                 for cand in candidates:
+                    if is_placeholder(cand.text):
+                        continue
                     vm = val_price_pattern.search(cand.text.strip())
                     if vm and vm.group(1):
                         price_val = vm.group(1)
-                        # Check combined text for tax inclusion
                         combined_badge_text = f"{line.text} {cand.text}"
                         incl_tax = True if tax_incl_pattern.search(combined_badge_text) else (False if tax_excl_pattern.search(combined_badge_text) else None)
                         mrp_info = MRPInfo(
@@ -460,7 +547,7 @@ class OCRProductDataParser:
         return MRPInfo(), None
 
     def parse_manufacturer(self, lines: List[OCRLineItem]) -> Tuple[ManufacturerInfo, Optional[EvidenceItem]]:
-        """Extract manufacturer / packer / importer role, entity name, and complete address."""
+        """Extract manufacturer / packer / importer role, entity name, and complete multiline address."""
         role_pattern = re.compile(
             r"(Manufactured\s+(?:&|and)\s+Packed\s+by|Manufactured\s+by|Mfg\.?\s*by|"
             r"Packed\s+by|Pkd\.?\s*by|Imported\s+by|Marketed\s+by|Manufactured\s+for)",
@@ -470,7 +557,7 @@ class OCRProductDataParser:
         matched_line_idx: Optional[int] = None
         role_str: Optional[str] = None
         name_str: Optional[str] = None
-        addr_str: Optional[str] = None
+        addr_parts: List[str] = []
 
         for idx, line in enumerate(lines):
             if line.confidence < 0.5:
@@ -484,38 +571,50 @@ class OCRProductDataParser:
                 elif "pkd" in role_str.lower():
                     role_str = "Packed by"
 
-                # Extract entity name following declaration
                 after_role = line.text[m.end():].lstrip(" :-–").strip()
                 if after_role:
-                    # Check if address is comma-separated on the same line
                     parts = after_role.split(",", 1)
                     cand_name = clean_placeholder(parts[0].strip())
                     name_str = cand_name
                     if len(parts) > 1 and parts[1].strip():
                         cand_addr = clean_placeholder(parts[1].strip())
-                        addr_str = cand_addr
+                        if cand_addr:
+                            addr_parts.append(cand_addr)
                 break
 
         if matched_line_idx is not None:
             decl_line = lines[matched_line_idx]
+            ref_h = max(decl_line.bbox.height, 16.0)
+            max_addr_dist = max(ref_h * 4.5, 180.0)
 
-            # If address was not on the same line, check spatially adjacent subsequent lines
-            if not addr_str:
-                addr_prefix_pattern = re.compile(r"^(?:Factory\s*Address|Address|Regd\.?\s*Office)\s*[:\-–]?\s*", re.IGNORECASE)
-                pin_code_pattern = re.compile(r"\b[1-9][0-9]{5}\b")
+            # Check lines directly below for address parts (supporting multi-line addresses)
+            addr_prefix_pattern = re.compile(r"^(?:Factory\s*Address|Address|Regd\.?\s*Office|Works|Unit)\s*[:\-–]?\s*", re.IGNORECASE)
+            stop_headers_pattern = re.compile(
+                r"^(?:NET\s*QUANTITY|NET\s*QTY|NET\s*WT|MAXIMUM\s*RETAIL\s*PRICE|MRP|PRICE|"
+                r"MFG\b|PKD\b|DATE|BEST\s*BEFORE|EXP(?:IRY)?|USE\s*BY|BATCH|LOT|"
+                r"CONSUMER\s*CARE|CUSTOMER\s*CARE|HELPLINE|COUNTRY\s*OF\s*ORIGIN|GENERIC)",
+                re.IGNORECASE,
+            )
 
-                for nxt_idx in range(matched_line_idx + 1, min(len(lines), matched_line_idx + 3)):
-                    candidate_line = lines[nxt_idx]
-                    # Check vertical proximity
-                    if candidate_line.bbox.y_min <= decl_line.bbox.y_max + 140.0:
-                        txt = candidate_line.text.strip()
-                        if addr_prefix_pattern.search(txt) or pin_code_pattern.search(txt):
-                            clean_addr = addr_prefix_pattern.sub("", txt).strip()
-                            clean_addr = clean_placeholder(clean_addr)
-                            if clean_addr:
-                                addr_str = clean_addr
-                            break
+            for nxt_idx in range(matched_line_idx + 1, min(len(lines), matched_line_idx + 4)):
+                cand_line = lines[nxt_idx]
+                if cand_line.bbox.y_min > decl_line.bbox.y_max + max_addr_dist:
+                    break
+                txt = cand_line.text.strip()
+                if is_placeholder(txt):
+                    continue
+                if stop_headers_pattern.search(txt):
+                    break
 
+                clean_txt = addr_prefix_pattern.sub("", txt).strip()
+                clean_txt = clean_placeholder(clean_txt)
+                if clean_txt and len(clean_txt) > 2:
+                    if not name_str:
+                        name_str = clean_txt
+                    else:
+                        addr_parts.append(clean_txt)
+
+            addr_str = ", ".join(addr_parts) if addr_parts else None
             role_str = clean_placeholder(role_str)
             name_str = clean_placeholder(name_str)
             addr_str = clean_placeholder(addr_str)
@@ -543,97 +642,172 @@ class OCRProductDataParser:
         return ManufacturerInfo(), None
 
     def parse_dates(self, lines: List[OCRLineItem]) -> Tuple[DateInfo, List[EvidenceItem]]:
-        """Extract manufacture date, packing date, best before duration, and expiry date."""
+        """Extract manufacture date, packing date, best before duration, and expiry date.
+        
+        Reliably handles:
+        - Inline declarations: 'Mfg. Date: 13 June 2025', 'Use By: 14 Dec 2025'
+        - Multi-token split boxes: 'Mfg.', 'Date:', '13 June 2025'
+        - Spatial separation: Header label on one box, date below or to the right
+        - Common date formats: DD Month YYYY, DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, MM/YYYY, etc.
+        """
         evidence_items: List[EvidenceItem] = []
 
         mfg_date: Optional[str] = None
         pkd_date: Optional[str] = None
         best_before: Optional[str] = None
         use_by: Optional[str] = None
+        expiry_date: Optional[str] = None
+        bb_duration: Optional[str] = None
 
         mfg_pkd_pattern = re.compile(
             r"(?:Mfg\s*(?:&|and|/)\s*(?:Pkd|Packing)(?:\s*Date)?)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Best\s*Before|BB|Use\s*by|Exp)|$)",
             re.IGNORECASE,
         )
         mfg_pattern = re.compile(
-            r"(?:Mfg\s*Date|MFD(?:\s*Date)?|Date\s*of\s*Manufacture)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Best\s*Before|BB|Use\s*by|Exp)|$)",
+            r"(?:Mfg\.?\s*Date|Manufacturing\s*Date|Manufactured\s*On|Date\s*of\s*Manufacture|DOM\b|MFD\b)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Best\s*Before|BB|Use\s*by|Exp)|$)",
             re.IGNORECASE,
         )
         pkd_pattern = re.compile(
-            r"(?:Pkd\s*Date|Packing\s*Date|Date\s*of\s*Packing)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Best\s*Before|BB|Use\s*by|Exp)|$)",
+            r"(?:Packed\s*Date|Pkg\.?\s*Date|Packing\s*Date|Date\s*of\s*Packing|PKD\b)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Best\s*Before|BB|Use\s*by|Exp)|$)",
             re.IGNORECASE,
         )
         best_before_pattern = re.compile(
-            r"(?:Best\s*Before(?:\s*Date)?|BB|Best\s*by)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Use\s*by|Exp(?:iry)?)|$)",
+            r"(?:Best\s*Before(?:\s*End)?|Best\s*by|BBE\b)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Use\s*by|Exp(?:iry)?)|$)",
             re.IGNORECASE,
         )
         use_by_pattern = re.compile(
-            r"(?:Use\s*by|Expiry(?:\s*Date)?|Exp\.?\s*Date|EXP)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Mfg|Pkd|Packing|Best\s*Before|BB)|$)",
+            r"(?:Use\s*by|Use\s*before|Expiry(?:\s*Date)?|Exp\.?\s*Date|Expires\s*on|EXP\b)\s*[:\-–]?\s*([^;\n\|]+?)(?=\s+(?:Mfg|Pkd|Packing|Best\s*Before|BB)|$)",
             re.IGNORECASE,
         )
 
-        for line in lines:
-            if line.confidence < 0.5:
-                continue
+        date_val_pattern = re.compile(
+            r"\b(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{1,2}\s+[a-zA-Z]{3,9}\s+\d{2,4}|[a-zA-Z]{3,9}\s+\d{1,2},?\s+\d{2,4}|\d{1,2}[\/\-\.]\d{4}|[a-zA-Z]{3,9}\s+\d{4})\b"
+        )
 
-            # Mfg & Pkd combined declaration (e.g. 'Mfg & Pkd Date: 07/2026')
+        valid_lines = [l for l in lines if l.confidence >= 0.3 and not is_placeholder(l.text)]
+
+        # 1. Windowed multi-line scanning (1-line, 2-line, 3-line windows to handle split boxes)
+        text_windows = []
+        for idx, l in enumerate(valid_lines):
+            text_windows.append((l.text, l.text))
+            if idx + 1 < len(valid_lines):
+                next_l = valid_lines[idx + 1]
+                if abs(next_l.bbox.y_min - l.bbox.y_min) <= max(l.bbox.height, 16.0) * 3.5:
+                    text_windows.append((f"{l.text} {next_l.text}", f"{l.text} {next_l.text}"))
+            if idx + 2 < len(valid_lines):
+                next2_l = valid_lines[idx + 2]
+                if abs(next2_l.bbox.y_min - l.bbox.y_min) <= max(l.bbox.height, 16.0) * 5.0:
+                    text_windows.append((f"{l.text} {valid_lines[idx+1].text} {next2_l.text}", f"{l.text} ... {next2_l.text}"))
+
+        for window_text, ev_source in text_windows:
+            # Mfg & Pkd combined declaration
             if not mfg_date and not pkd_date:
-                m = mfg_pkd_pattern.search(line.text)
+                m = mfg_pkd_pattern.search(window_text)
                 if m:
-                    date_val = clean_placeholder(m.group(1).strip())
-                    if date_val and any(c.isdigit() for c in date_val):
-                        mfg_date = date_val
-                        pkd_date = date_val
-                        evidence_items.append(EvidenceItem(field="manufacture_date", value=date_val, evidence=line.text))
-                        evidence_items.append(EvidenceItem(field="packing_date", value=date_val, evidence=line.text))
+                    val = clean_placeholder(m.group(1).strip())
+                    if val and any(c.isdigit() for c in val):
+                        mfg_date = val
+                        pkd_date = val
+                        evidence_items.append(EvidenceItem(field="manufacture_date", value=val, evidence=ev_source))
+                        evidence_items.append(EvidenceItem(field="packing_date", value=val, evidence=ev_source))
 
             # Individual Mfg Date
             if not mfg_date:
-                m = mfg_pattern.search(line.text)
+                m = mfg_pattern.search(window_text)
                 if m:
-                    date_val = clean_placeholder(m.group(1).strip())
-                    if date_val and any(c.isdigit() for c in date_val):
-                        mfg_date = date_val
-                        evidence_items.append(EvidenceItem(field="manufacture_date", value=date_val, evidence=line.text))
+                    val = clean_placeholder(m.group(1).strip())
+                    if val and any(c.isdigit() for c in val):
+                        mfg_date = val
+                        evidence_items.append(EvidenceItem(field="manufacture_date", value=val, evidence=ev_source))
 
             # Individual Pkd Date
             if not pkd_date:
-                m = pkd_pattern.search(line.text)
+                m = pkd_pattern.search(window_text)
                 if m:
-                    date_val = clean_placeholder(m.group(1).strip())
-                    if date_val and any(c.isdigit() for c in date_val):
-                        pkd_date = date_val
-                        evidence_items.append(EvidenceItem(field="packing_date", value=date_val, evidence=line.text))
+                    val = clean_placeholder(m.group(1).strip())
+                    if val and any(c.isdigit() for c in val):
+                        pkd_date = val
+                        evidence_items.append(EvidenceItem(field="packing_date", value=val, evidence=ev_source))
 
             # Best Before
             if not best_before:
-                m = best_before_pattern.search(line.text)
+                m = best_before_pattern.search(window_text)
                 if m:
                     bb_raw = m.group(1).strip()
-                    # Strip leading "Date:" if present
                     bb_raw = re.sub(r"^(?:date)\s*[:\-–]?\s*", "", bb_raw, flags=re.IGNORECASE).strip()
                     bb_clean = clean_placeholder(bb_raw)
                     if bb_clean:
-                        # Normalize abbreviation 'mfg' -> 'manufacture', 'pkd' -> 'packaging' for statutory rule matching
                         bb_norm = re.sub(r'\bfrom\s+mfg\b', 'from manufacture', bb_clean, flags=re.IGNORECASE)
                         bb_norm = re.sub(r'\bfrom\s+pkd\b', 'from packaging', bb_norm, flags=re.IGNORECASE)
                         best_before = bb_norm
-                        evidence_items.append(EvidenceItem(field="best_before", value=bb_norm, evidence=line.text))
+                        evidence_items.append(EvidenceItem(field="best_before", value=bb_norm, evidence=ev_source))
 
             # Use By / Expiry
             if not use_by:
-                m = use_by_pattern.search(line.text)
+                m = use_by_pattern.search(window_text)
                 if m:
                     exp_val = clean_placeholder(m.group(1).strip())
                     if exp_val and any(c.isdigit() for c in exp_val):
                         use_by = exp_val
-                        evidence_items.append(EvidenceItem(field="use_by", value=exp_val, evidence=line.text))
+                        expiry_date = exp_val
+                        evidence_items.append(EvidenceItem(field="use_by", value=exp_val, evidence=ev_source))
+
+        # 2. Spatial Fallback: Header labels split vertically or horizontally
+        mfg_hdr_re = re.compile(r"^(?:Mfg\.?\s*Date|Manufacturing\s*Date|Manufactured\s*On|Date\s*of\s*Manufacture|DOM|MFD)\s*[:\-–]?$", re.IGNORECASE)
+        pkd_hdr_re = re.compile(r"^(?:Packed\s*Date|Pkg\.?\s*Date|Packing\s*Date|Date\s*of\s*Packing|PKD)\s*[:\-–]?$", re.IGNORECASE)
+        use_by_hdr_re = re.compile(r"^(?:Use\s*by|Use\s*before|Expiry(?:\s*Date)?|Exp\.?\s*Date|Expires\s*on|EXP)\s*[:\-–]?$", re.IGNORECASE)
+        bb_hdr_re = re.compile(r"^(?:Best\s*Before(?:\s*End)?|Best\s*by|BBE)\s*[:\-–]?$", re.IGNORECASE)
+
+        for line in valid_lines:
+            txt = line.text.strip()
+            if not mfg_date and mfg_hdr_re.match(txt):
+                cands = self._find_spatially_right(line.bbox, valid_lines) + self._find_spatially_below(line.bbox, valid_lines)
+                for cand in cands:
+                    dm = date_val_pattern.search(cand.text)
+                    if dm:
+                        mfg_date = dm.group(0)
+                        evidence_items.append(EvidenceItem(field="manufacture_date", value=mfg_date, evidence=f"{line.text} -> {cand.text}"))
+                        break
+
+            if not pkd_date and pkd_hdr_re.match(txt):
+                cands = self._find_spatially_right(line.bbox, valid_lines) + self._find_spatially_below(line.bbox, valid_lines)
+                for cand in cands:
+                    dm = date_val_pattern.search(cand.text)
+                    if dm:
+                        pkd_date = dm.group(0)
+                        evidence_items.append(EvidenceItem(field="packing_date", value=pkd_date, evidence=f"{line.text} -> {cand.text}"))
+                        break
+
+            if not use_by and use_by_hdr_re.match(txt):
+                cands = self._find_spatially_right(line.bbox, valid_lines) + self._find_spatially_below(line.bbox, valid_lines)
+                for cand in cands:
+                    dm = date_val_pattern.search(cand.text)
+                    if dm:
+                        use_by = dm.group(0)
+                        expiry_date = use_by
+                        evidence_items.append(EvidenceItem(field="use_by", value=use_by, evidence=f"{line.text} -> {cand.text}"))
+                        break
+
+            if not best_before and bb_hdr_re.match(txt):
+                cands = self._find_spatially_right(line.bbox, valid_lines) + self._find_spatially_below(line.bbox, valid_lines)
+                for cand in cands:
+                    cand_clean = clean_placeholder(cand.text.strip())
+                    if cand_clean and not is_placeholder(cand_clean):
+                        best_before = cand_clean
+                        evidence_items.append(EvidenceItem(field="best_before", value=cand_clean, evidence=f"{line.text} -> {cand.text}"))
+                        break
+
+        # Check if best_before represents a duration (e.g. '6 Months from Manufacture')
+        if best_before and re.search(r"\b\d+\s*(?:month|mth|mo|day|d|year|yr)s?\b", best_before, re.IGNORECASE):
+            bb_duration = best_before
 
         date_info = DateInfo(
             manufacture_date=mfg_date,
             packing_date=pkd_date,
             best_before=best_before,
             use_by=use_by,
+            expiry_date=expiry_date or use_by,
+            best_before_duration=bb_duration,
         )
         return date_info, evidence_items
 
@@ -745,6 +919,10 @@ class PaddleOCRService:
         self._ocr = None
         self.last_raw_result: Optional[OCRRawResult] = None
         self.parser = OCRProductDataParser()
+        self.last_timings: Dict[str, float] = {}
+        self._last_prep_time_ms: float = 0.0
+        self._last_infer_time_ms: float = 0.0
+        self._last_parse_time_ms: float = 0.0
 
     def _get_ocr_engine(self):
         """Lazy initialization of the PaddleOCR inference engine with dual 2.x/3.x compatibility."""
@@ -764,10 +942,15 @@ class PaddleOCRService:
             )
 
             try:
-                # PaddleOCR 3.x preferred signature (enable_mkldnn=False on Windows to prevent PIR issues)
+                # PaddleOCR 3.x preferred signature with disabled document unwarping & orientation models
                 self._ocr = PaddleOCR(
                     lang=self.lang,
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False,
                     enable_mkldnn=False,
+                    text_det_limit_side_len=960,
+                    text_det_limit_type="max",
                 )
             except (TypeError, ValueError):
                 try:
@@ -794,18 +977,30 @@ class PaddleOCRService:
 
     def extract_raw_ocr(self, image: Image.Image) -> OCRRawResult:
         """Execute PaddleOCR on a PIL image and return structured lines, bboxes, and confidence."""
+        t_prep_start = time.time()
         engine = self._get_ocr_engine()
 
+        # Aspect-preserving downscaling to cap extreme resolutions while preserving text sharpness
         if image.mode != "RGB":
             rgb_image = image.convert("RGB")
         else:
             rgb_image = image
 
+        w, h = rgb_image.size
+        max_dim = 1600
+        if max(w, h) > max_dim:
+            scale = max_dim / float(max(w, h))
+            new_w = max(1, int(round(w * scale)))
+            new_h = max(1, int(round(h * scale)))
+            rgb_image = rgb_image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
         np_image = np.array(rgb_image)
+        self._last_prep_time_ms = (time.time() - t_prep_start) * 1000.0
 
         line_items: List[OCRLineItem] = []
         confidences: List[float] = []
 
+        t_infer_start = time.time()
         # Run inference supporting both PaddleOCR 3.x (predict) and 2.x (ocr)
         if hasattr(engine, "predict"):
             try:
@@ -905,6 +1100,7 @@ class PaddleOCRService:
         )
 
         self.last_raw_result = result
+        self._last_infer_time_ms = (time.time() - t_infer_start) * 1000.0
         return result
 
     def extract_product_data(
@@ -920,9 +1116,12 @@ class PaddleOCRService:
         raw_result = self.extract_raw_ocr(image)
         lines = raw_result.lines
 
+        t_parse_start = time.time()
         # 1. Deterministic Parsing
-        generic_name, ev_generic = self.parser.parse_generic_name(lines)
-        brand_name, product_name, ev_names = self.parser.parse_brand_and_product_name(lines, generic_name)
+        brand_name, product_name, ev_names = self.parser.parse_brand_and_product_name(lines)
+        generic_name, ev_generic = self.parser.parse_generic_name(
+            lines, product_name_hint=product_name, brand_name_hint=brand_name
+        )
         category = self.parser.parse_category(category_hint, generic_name, raw_result.full_text)
         quantity, ev_qty = self.parser.parse_quantity(lines)
         mrp, ev_mrp = self.parser.parse_mrp(lines)
@@ -962,6 +1161,9 @@ class PaddleOCRService:
             packing_date=clean_placeholder(dates.packing_date),
             best_before=clean_placeholder(dates.best_before),
             use_by=clean_placeholder(dates.use_by),
+            expiry_date=clean_placeholder(dates.expiry_date),
+            best_before_duration=clean_placeholder(dates.best_before_duration),
+            inspection_date=clean_placeholder(dates.inspection_date),
         )
 
         clean_care = ConsumerCareInfo(
@@ -992,6 +1194,13 @@ class PaddleOCRService:
             else:
                 import_status = ImportStatusEnum.IMPORTED
                 is_imported = True
+        elif clean_mfg.address:
+            addr_lower = clean_mfg.address.lower()
+            has_pin = bool(re.search(r"\b[1-9][0-9]{5}\b", clean_mfg.address))
+            has_state = any(st in addr_lower for st in INDIAN_STATES)
+            if has_pin or has_state:
+                import_status = ImportStatusEnum.DOMESTIC
+                is_imported = False
 
         date_applicability = DateApplicabilityEnum.UNCERTAIN
         if clean_category:
@@ -1002,7 +1211,7 @@ class PaddleOCRService:
                 date_applicability = DateApplicabilityEnum.NOT_APPLICABLE
 
         # 5. Construct and return the ProductData model
-        return ProductData(
+        p_result = ProductData(
             product_name=clean_prod_name,
             brand_name=clean_brand_name,
             generic_name=clean_generic_name,
@@ -1019,6 +1228,13 @@ class PaddleOCRService:
             package_type="normal",
             raw_evidence=raw_evidence_strings,
         )
+        self._last_parse_time_ms = (time.time() - t_parse_start) * 1000.0
+        self.last_timings = {
+            "preprocessing_time_ms": round(self._last_prep_time_ms, 2),
+            "ocr_inference_time_ms": round(self._last_infer_time_ms, 2),
+            "deterministic_parsing_time_ms": round(self._last_parse_time_ms, 2),
+        }
+        return p_result
 
 
 # Singleton service instance

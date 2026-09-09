@@ -1,5 +1,5 @@
 from app.database.database import SessionLocal
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 
 from sqlalchemy.orm import Session
@@ -18,11 +18,14 @@ from app.rules.rule_registry import get_rule_evaluator
 def evaluate_product_compliance(
     product: ProductData,
     db: Session = None,
+    inspection_date: Optional[str] = None,
 ) -> Tuple[List[RuleResult], OverallStatusEnum, int, InspectionSummary]:
     """
     Loads enabled rules from the database and evaluates them
     using the deterministic rule registry.
     """
+    if inspection_date:
+        product.dates.inspection_date = str(inspection_date)
 
     if db is None:
         db = SessionLocal()
@@ -75,3 +78,23 @@ def evaluate_product_compliance(
         score = 100
 
     return results, overall_status, score, summary
+
+
+class ComplianceRuleEngine:
+    """Wrapper class providing rule engine evaluate method for backward compatibility."""
+
+    def evaluate(
+        self,
+        product: ProductData,
+        db: Session = None,
+        inspection_date: Optional[str] = None,
+    ) -> Tuple[List[RuleResult], InspectionSummary, OverallStatusEnum, int]:
+        checks, overall_status, score, summary = evaluate_product_compliance(
+            product=product,
+            db=db,
+            inspection_date=inspection_date,
+        )
+        return checks, summary, overall_status, score
+
+
+rule_engine = ComplianceRuleEngine()

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -28,6 +28,15 @@ class DateApplicabilityEnum(str, Enum):
     UNCERTAIN = "UNCERTAIN"
 
 
+class ImageQualityInfo(BaseModel):
+    width: int
+    height: int
+    format: str
+    file_size_kb: float
+    quality_label: str  # GOOD, MODERATE, LOW
+    text_visibility: str  # CLEAR, READABLE, POTENTIALLY AMBIGUOUS
+
+
 class ManufacturerData(BaseModel):
     role: Optional[str] = None  # Manufacturer / Packer / Importer
     name: Optional[str] = None
@@ -52,6 +61,9 @@ class DatesData(BaseModel):
     packing_date: Optional[str] = None
     best_before: Optional[str] = None
     use_by: Optional[str] = None
+    expiry_date: Optional[str] = None
+    best_before_duration: Optional[str] = None
+    inspection_date: Optional[str] = None
 
 
 class ConsumerCareData(BaseModel):
@@ -78,7 +90,7 @@ class ProductData(BaseModel):
     date_applicability: DateApplicabilityEnum = DateApplicabilityEnum.UNCERTAIN
     package_type: Optional[str] = "normal"
 
-    raw_evidence: List[str] = Field(default_factory=list)
+    raw_evidence: List[Union[EvidenceItem, str, Dict[str, Any]]] = Field(default_factory=list)
 
 
 class RuleResult(BaseModel):
@@ -127,6 +139,9 @@ class InspectionResponse(BaseModel):
         "by an authorized Legal Metrology officer and applicable current regulations."
     )
     report: Optional[ReportData] = None
+    execution_time_ms: Optional[float] = None
+    timings: Optional[Dict[str, Any]] = None
+    image_metadata: Optional[ImageQualityInfo] = None
 
 
 # Backward compatibility aliases

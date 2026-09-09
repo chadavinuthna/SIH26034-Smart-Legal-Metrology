@@ -91,6 +91,27 @@ const buildInitialReportData = (insp) => {
 };
 
 export default function Report({ inspection, onBackToResults }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  // Initialize report-level editable data from inspection.report when available, or defaults
+  const [reportData, setReportData] = useState(() => buildInitialReportData(inspection));
+
+  // Temporary draft state for edit session (Cancel/Save behavior)
+  const [tempData, setTempData] = useState(reportData);
+
+  // Re-synchronize when inspection or saved report changes
+  useEffect(() => {
+    const initial = buildInitialReportData(inspection);
+    setReportData(initial);
+    setTempData(initial);
+    setValidationErrors({});
+    setSaveError(null);
+    setIsEditing(false);
+  }, [inspection?.inspection_id, inspection?.report?.updated_at]);
+
   if (!inspection) {
     return (
       <div className="max-w-4xl mx-auto p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -115,27 +136,6 @@ export default function Report({ inspection, onBackToResults }) {
     disclaimer,
     is_demo,
   } = inspection;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-
-  // Initialize report-level editable data from inspection.report when available, or defaults
-  const [reportData, setReportData] = useState(() => buildInitialReportData(inspection));
-
-  // Temporary draft state for edit session (Cancel/Save behavior)
-  const [tempData, setTempData] = useState(reportData);
-
-  // Re-synchronize when inspection or saved report changes
-  useEffect(() => {
-    const initial = buildInitialReportData(inspection);
-    setReportData(initial);
-    setTempData(initial);
-    setValidationErrors({});
-    setSaveError(null);
-    setIsEditing(false);
-  }, [inspection?.inspection_id, inspection?.report?.updated_at]);
 
   const handleStartEditing = () => {
     setTempData({

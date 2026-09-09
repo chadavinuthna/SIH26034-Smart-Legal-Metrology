@@ -29,8 +29,12 @@ export async function analyzePackageImage({ file, category, demoSample }) {
     saveInspectionToHistory(data);
     return data;
   } catch (error) {
-    console.warn("Backend API request error, fallback to mock demo processing:", error);
-    return simulateDemoInspection(demoSample || "compliant", category);
+    if (demoSample) {
+      console.warn("Backend demo sample API request error, fallback to mock demo processing:", error);
+      return simulateDemoInspection(demoSample, category);
+    }
+    console.error("Backend inspection API error:", error);
+    throw error;
   }
 }
 

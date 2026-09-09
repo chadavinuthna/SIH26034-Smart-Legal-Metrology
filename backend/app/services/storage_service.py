@@ -57,6 +57,26 @@ class StorageService:
         items.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         return items
 
+    def save(self, inspection: InspectionResponse) -> InspectionResponse:
+        self.save_inspection(inspection)
+        return inspection
+
+    def get(self, inspection_id: str) -> Optional[InspectionResponse]:
+        data = self.get_inspection(inspection_id)
+        if data:
+            try:
+                return InspectionResponse.model_validate(data)
+            except Exception:
+                return None
+        return None
+
+    def list_all(self) -> List[Dict]:
+        return self.get_all_inspections()
+
+    def clear(self):
+        self._inspections.clear()
+        self._save_to_disk()
+
     def get_stats(self) -> Dict[str, int]:
         total = len(self._inspections)
         compliant = sum(1 for i in self._inspections.values() if i.get("status") == "COMPLIANT")
