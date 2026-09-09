@@ -4,7 +4,7 @@ import { loginUser } from "../services/auth";
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState("inspector");
-  const [password, setPassword] = useState("inspector123");
+  const [password, setPassword] = useState("Insp#LM8842$Secure2026!");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,12 +25,12 @@ export default function Login({ onLoginSuccess }) {
 
   const handleInstantDemo = async () => {
     setUsername("inspector");
-    setPassword("inspector123");
+    setPassword("Insp#LM8842$Secure2026!");
     setError(null);
     setIsLoading(true);
 
     try {
-      const user = await loginUser("inspector", "inspector123");
+      const user = await loginUser("inspector", "Insp#LM8842$Secure2026!");
       onLoginSuccess(user);
     } catch (err) {
       setError(err.message || "Failed to launch demo session");
@@ -137,10 +137,10 @@ export default function Login({ onLoginSuccess }) {
               Available Demo Credentials:
             </span>
             <div className="flex justify-between items-center text-slate-300">
-              <span>Inspector: <code className="text-blue-400">inspector</code> / <code className="text-blue-400">inspector123</code></span>
+              <span>Inspector: <code className="text-blue-400">inspector</code> / <code className="text-blue-400">Insp#LM8842$Secure2026!</code></span>
             </div>
             <div className="flex justify-between items-center text-slate-300">
-              <span>Manufacturer: <code className="text-amber-400">manufacturer</code> / <code className="text-amber-400">manufacturer123</code></span>
+              <span>Manufacturer: <code className="text-amber-400">manufacturer</code> / <code className="text-amber-400">Mfr#QA7135$Secure2026!</code></span>
             </div>
           </div>
 

@@ -140,6 +140,7 @@ def test_seed_users_idempotence():
         assert inspector.role == "INSPECTOR"
         assert inspector.full_name == "Insp. Vikram Singh"
         assert inspector.organization == "Legal Metrology Department, Govt of India"
+        assert "Insp#LM8842$Secure2026!" not in inspector.hashed_password
         assert "inspector123" not in inspector.hashed_password
 
         manufacturer = db.query(User).filter(User.username == "manufacturer").first()
@@ -147,6 +148,7 @@ def test_seed_users_idempotence():
         assert manufacturer.role == "MANUFACTURER"
         assert manufacturer.full_name == "Sunil Sharma (Quality Assurance)"
         assert manufacturer.organization == "Britannia Industries Ltd"
+        assert "Mfr#QA7135$Secure2026!" not in manufacturer.hashed_password
         assert "manufacturer123" not in manufacturer.hashed_password
 
         # Call seed_users second time (idempotency check)
@@ -166,10 +168,10 @@ def test_seed_users_idempotence():
 def test_demo_users_login():
     client = TestClient(app)
 
-    # Login with demo inspector
+    # Login with new strong demo inspector password
     resp_insp = client.post(
         "/api/auth/login",
-        json={"username": "inspector", "password": "inspector123"},
+        json={"username": "inspector", "password": "Insp#LM8842$Secure2026!"},
     )
     assert resp_insp.status_code == 200
     insp_data = resp_insp.json()
@@ -177,14 +179,53 @@ def test_demo_users_login():
     assert insp_data["role"] == "INSPECTOR"
     assert insp_data["full_name"] == "Insp. Vikram Singh"
 
-    # Login with demo manufacturer
+    # Login with new strong demo manufacturer password
     resp_mfr = client.post(
         "/api/auth/login",
-        json={"username": "manufacturer", "password": "manufacturer123"},
+        json={"username": "manufacturer", "password": "Mfr#QA7135$Secure2026!"},
     )
     assert resp_mfr.status_code == 200
     mfr_data = resp_mfr.json()
     assert mfr_data["username"] == "manufacturer"
     assert mfr_data["role"] == "MANUFACTURER"
     assert mfr_data["full_name"] == "Sunil Sharma (Quality Assurance)"
+
+    # Old weak passwords must be rejected with 401
+    resp_old_insp = client.post(
+        "/api/auth/login",
+        json={"username": "inspector", "password": "inspector123"},
+    )
+    assert resp_old_insp.status_code == 401
+
+    resp_old_mfr = client.post(
+        "/api/auth/login",
+        json={"username": "manufacturer", "password": "manufacturer123"},
+    )
+    assert resp_old_mfr.status_code == 401
+
+
+def test_seed_users_rehashes_existing_accounts():
+    from app.database.seed_users import seed_users
+
+    db = TestingSessionLocal()
+    try:
+        # Manually set an outdated weak hash on existing demo user
+        inspector = db.query(User).filter(User.username == "inspector").first()
+        old_weak_hash = hash_password("old_weak_password_123")
+        inspector.hashed_password = old_weak_hash
+        db.commit()
+
+        # Re-run seed_users
+        seed_users(db)
+
+        # Refresh from database
+        db.refresh(inspector)
+
+        # Old password must now be invalid
+        assert verify_password("old_weak_password_123", inspector.hashed_password) is False
+        # New strong password must now be valid
+        assert verify_password("Insp#LM8842$Secure2026!", inspector.hashed_password) is True
+    finally:
+        db.close()
+
 
