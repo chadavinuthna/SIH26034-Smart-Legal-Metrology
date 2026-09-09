@@ -1,5 +1,5 @@
 from app.database.database import Base, engine
-from app.database.models import Rule
+from app.database.models import Rule, User
 
 
 def init_db():

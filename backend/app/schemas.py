@@ -159,3 +159,17 @@ class EvidenceItem(BaseModel):
     value: Optional[str] = None
     evidence: str
 
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AuthUserResponse(BaseModel):
+    id: int
+    username: str
+    role: str
+    full_name: str
+    organization: Optional[str] = None
+
+

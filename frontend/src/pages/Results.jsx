@@ -17,7 +17,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-export default function Results({ inspection, onNewInspection, onViewReport, onBackToDashboard }) {
+export default function Results({ currentUser, inspection, onNewInspection, onViewReport, onBackToDashboard }) {
+  const isManufacturer = currentUser?.role === "MANUFACTURER";
   const [selectedCheck, setSelectedCheck] = useState(null);
   const [activeTab, setActiveTab] = useState("checks"); // 'checks' | 'extracted'
   const [filterStatus, setFilterStatus] = useState("ALL");
@@ -59,7 +60,7 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
       <div className="flex items-center justify-between">
         <button
           onClick={onBackToDashboard}
-          className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-2xs transition-colors flex items-center gap-2"
+          className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-2xs transition-colors flex items-center gap-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Dashboard</span>
@@ -68,17 +69,17 @@ export default function Results({ inspection, onNewInspection, onViewReport, onB
         <div className="flex items-center gap-3">
           <button
             onClick={onViewReport}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Print / Save PDF Report</span>
+            <span>{isManufacturer ? "View / Print Audit Report" : "Print / Save PDF Report"}</span>
           </button>
           <button
             onClick={onNewInspection}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>New Inspection</span>
+            <span>{isManufacturer ? "Screen Another Package" : "New Inspection"}</span>
           </button>
         </div>
       </div>

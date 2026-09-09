@@ -12,10 +12,23 @@ import SettingsPlaceholder from "./pages/SettingsPlaceholder";
 import { analyzePackageImage } from "./services/api";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Default logged in for instant evaluation
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [currentInspection, setCurrentInspection] = useState(null);
   const [pendingUploadData, setPendingUploadData] = useState(null);
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setCurrentPage("dashboard");
+    setCurrentInspection(null);
+  };
 
   // Flow handlers
   const handleStartAnalysis = (uploadData) => {
@@ -47,18 +60,30 @@ export default function App() {
   };
 
   if (!isAuthenticated) {
-    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+    return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  const titles = {
-    dashboard: { title: "Package Compliance Dashboard", subtitle: "Legal Metrology inspection and compliance screening" },
-    new_inspection: { title: "New Package Inspection", subtitle: "Upload package image for Legal Metrology screening" },
-    progress: { title: "Analysis in Progress", subtitle: "Reading package label and executing rule engine" },
-    results: { title: "Compliance Assessment Result", subtitle: "Legal Metrology evaluation and rule breakdown" },
-    history: { title: "Inspection History", subtitle: "Log of past packaged commodity screenings" },
-    reports: { title: "Official Inspection Report", subtitle: "Printable Legal Metrology compliance document" },
-    settings: { title: "System Settings", subtitle: "Rule engine and environment setup" },
-  };
+  const isManufacturer = currentUser?.role === "MANUFACTURER";
+
+  const titles = isManufacturer
+    ? {
+        dashboard: { title: "Manufacturer Compliance Portal", subtitle: "Pre-market packaging verification & self-audit dashboard" },
+        new_inspection: { title: "Pre-Market Package Screening", subtitle: "Verify commodity packaging against Legal Metrology rules" },
+        progress: { title: "Screening in Progress", subtitle: "Analyzing label declarations and verifying compliance" },
+        results: { title: "Pre-Market Compliance Result", subtitle: "Packaging rule evaluation and defect breakdown" },
+        history: { title: "Screening History", subtitle: "Record of prior pre-market commodity evaluations" },
+        reports: { title: "Audit Report", subtitle: "Printable packaging compliance audit summary" },
+        settings: { title: "System Settings", subtitle: "Rule engine and environment setup" },
+      }
+    : {
+        dashboard: { title: "Package Compliance Dashboard", subtitle: "Legal Metrology inspection and compliance screening" },
+        new_inspection: { title: "New Package Inspection", subtitle: "Upload package image for Legal Metrology screening" },
+        progress: { title: "Analysis in Progress", subtitle: "Reading package label and executing rule engine" },
+        results: { title: "Compliance Assessment Result", subtitle: "Legal Metrology evaluation and rule breakdown" },
+        history: { title: "Inspection History", subtitle: "Log of past packaged commodity screenings" },
+        reports: { title: "Official Inspection Report", subtitle: "Printable Legal Metrology compliance document" },
+        settings: { title: "System Settings", subtitle: "Rule engine and environment setup" },
+      };
 
   const currentMeta = titles[currentPage] || titles.dashboard;
 
@@ -66,18 +91,24 @@ export default function App() {
     <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans">
       {/* Sidebar */}
       <Sidebar
+        currentUser={currentUser}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header title={currentMeta.title} subtitle={currentMeta.subtitle} />
+        <Header
+          currentUser={currentUser}
+          title={currentMeta.title}
+          subtitle={currentMeta.subtitle}
+        />
 
         <main className="flex-1 p-8 max-w-7xl w-full mx-auto">
           {currentPage === "dashboard" && (
             <Dashboard
+              currentUser={currentUser}
               onStartNewInspection={() => setCurrentPage("new_inspection")}
               onViewInspectionResult={handleViewInspectionResult}
             />
@@ -98,6 +129,7 @@ export default function App() {
 
           {currentPage === "results" && (
             <Results
+              currentUser={currentUser}
               inspection={currentInspection}
               onNewInspection={() => setCurrentPage("new_inspection")}
               onViewReport={() => setCurrentPage("reports")}
@@ -111,6 +143,7 @@ export default function App() {
 
           {currentPage === "reports" && (
             <Report
+              currentUser={currentUser}
               inspection={currentInspection}
               onBackToResults={() => setCurrentPage("results")}
             />
@@ -122,3 +155,4 @@ export default function App() {
     </div>
   );
 }
+

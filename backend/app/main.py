@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+from app.api.auth import router as auth_router
 from app.api.inspection import router as inspection_router
 
 app = FastAPI(
@@ -29,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(inspection_router)
 
 
