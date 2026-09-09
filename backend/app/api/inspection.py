@@ -1,8 +1,10 @@
 from typing import Optional
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from app.schemas import InspectionResponse
 from app.services.compliance_service import run_inspection
 from app.services.storage_service import storage_service
+from sqlalchemy.orm import Session
+from app.database.database import get_db
 
 router = APIRouter(prefix="/api/inspection", tags=["Inspection"])
 
@@ -17,8 +19,8 @@ async def analyze_package(
     image: Optional[UploadFile] = File(None),
     category: Optional[str] = Form("Auto Detect"),
     demo_sample: Optional[str] = Form(None),
-):
-    """
+    db: Session = Depends(get_db),
+):    """
     Primary endpoint for Package Label Compliance Screening.
     AI extracts declarations -> Deterministic rule engine calculates compliance status.
     """
@@ -42,6 +44,7 @@ async def analyze_package(
             image_bytes=image_bytes,
             category_hint=category,
             demo_sample=demo_sample,
+            db=db,
         )
         return inspection
     except Exception as e:

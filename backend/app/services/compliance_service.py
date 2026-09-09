@@ -1,6 +1,9 @@
 from datetime import datetime
 import random
 from typing import Optional
+
+from sqlalchemy.orm import Session
+
 from app.schemas import InspectionResponse
 from app.services.ai_service import extract_product_data_from_image
 from app.rules.rule_engine import evaluate_product_compliance
@@ -11,10 +14,13 @@ def run_inspection(
     image_bytes: Optional[bytes] = None,
     category_hint: Optional[str] = None,
     demo_sample: Optional[str] = None,
+    db: Optional[Session] = None,
 ) -> InspectionResponse:
     """
-    Coordinates AI Extraction -> Deterministic Rule Engine -> Inspection Response formatting.
+    Coordinates AI Extraction -> Database-backed Deterministic Rule Engine
+    -> Inspection Response formatting.
     """
+
     # 1. AI Extraction
     product_data = extract_product_data_from_image(
         image_bytes=image_bytes or b"",
@@ -22,8 +28,11 @@ def run_inspection(
         demo_sample=demo_sample,
     )
 
-    # 2. Deterministic Compliance Engine Execution (AI DOES NOT DECIDE STATUS)
-    checks, status, score, summary = evaluate_product_compliance(product_data)
+    # 2. Deterministic Compliance Engine Execution
+    checks, status, score, summary = evaluate_product_compliance(
+        product_data,
+        db,
+    )
 
     # 3. Generate Inspection ID
     year = datetime.now().year
