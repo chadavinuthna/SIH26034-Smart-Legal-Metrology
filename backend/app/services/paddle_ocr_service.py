@@ -920,6 +920,18 @@ class PaddleOCRService:
         self.last_raw_result: Optional[OCRRawResult] = None
         self.parser = OCRProductDataParser()
         self.last_timings: Dict[str, float] = {}
+        self._last_init_time_sec: float = 0.0
+        self._last_prep_time_sec: float = 0.0
+        self._last_infer_time_sec: float = 0.0
+        self._last_parse_time_sec: float = 0.0
+        self._last_evidence_time_sec: float = 0.0
+        self.last_benchmark_timings: Dict[str, float] = {
+            "ocr_initialization_sec": 0.0,
+            "preprocessing_sec": 0.0,
+            "ocr_inference_sec": 0.0,
+            "ocr_parsing_sec": 0.0,
+            "evidence_processing_sec": 0.0,
+        }
         self._last_prep_time_ms: float = 0.0
         self._last_infer_time_ms: float = 0.0
         self._last_parse_time_ms: float = 0.0
@@ -927,6 +939,7 @@ class PaddleOCRService:
     def _get_ocr_engine(self):
         """Lazy initialization of the PaddleOCR inference engine with dual 2.x/3.x compatibility."""
         if self._ocr is None:
+            t_init_start = time.perf_counter()
             try:
                 from paddleocr import PaddleOCR
             except ImportError:
@@ -944,6 +957,7 @@ class PaddleOCRService:
             try:
                 # PaddleOCR 3.x preferred signature with disabled document unwarping & orientation models
                 self._ocr = PaddleOCR(
+                    ocr_version="PP-OCRv4",
                     lang=self.lang,
                     use_doc_orientation_classify=False,
                     use_doc_unwarping=False,
@@ -964,6 +978,9 @@ class PaddleOCRService:
                 except Exception:
                     # Minimal baseline initialization
                     self._ocr = PaddleOCR(lang=self.lang)
+            self._last_init_time_sec = time.perf_counter() - t_init_start
+        else:
+            self._last_init_time_sec = 0.0
 
         return self._ocr
 
@@ -977,10 +994,10 @@ class PaddleOCRService:
 
     def extract_raw_ocr(self, image: Image.Image) -> OCRRawResult:
         """Execute PaddleOCR on a PIL image and return structured lines, bboxes, and confidence."""
-        t_prep_start = time.time()
         engine = self._get_ocr_engine()
 
         # Aspect-preserving downscaling to cap extreme resolutions while preserving text sharpness
+        t_prep_start = time.perf_counter()
         if image.mode != "RGB":
             rgb_image = image.convert("RGB")
         else:
@@ -995,12 +1012,13 @@ class PaddleOCRService:
             rgb_image = rgb_image.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
         np_image = np.array(rgb_image)
-        self._last_prep_time_ms = (time.time() - t_prep_start) * 1000.0
+        self._last_prep_time_sec = time.perf_counter() - t_prep_start
+        self._last_prep_time_ms = self._last_prep_time_sec * 1000.0
 
         line_items: List[OCRLineItem] = []
         confidences: List[float] = []
 
-        t_infer_start = time.time()
+        t_infer_start = time.perf_counter()
         # Run inference supporting both PaddleOCR 3.x (predict) and 2.x (ocr)
         if hasattr(engine, "predict"):
             try:
@@ -1132,7 +1150,8 @@ class PaddleOCRService:
         )
 
         self.last_raw_result = result
-        self._last_infer_time_ms = (time.time() - t_infer_start) * 1000.0
+        self._last_infer_time_sec = time.perf_counter() - t_infer_start
+        self._last_infer_time_ms = self._last_infer_time_sec * 1000.0
         return result
 
     def extract_product_data(
@@ -1149,7 +1168,7 @@ class PaddleOCRService:
         raw_result = self.extract_raw_ocr(image)
         lines = raw_result.lines
 
-        t_parse_start = time.time()
+        t_parse_start = time.perf_counter()
         # 1. Deterministic Parsing
         brand_name, product_name, ev_names = self.parser.parse_brand_and_product_name(lines)
         generic_name, ev_generic = self.parser.parse_generic_name(
@@ -1204,8 +1223,10 @@ class PaddleOCRService:
             email=clean_placeholder(consumer_care.email),
             address=clean_placeholder(consumer_care.address),
         )
+        parse_elapsed_1 = time.perf_counter() - t_parse_start
 
         # 3. Build Raw Evidence Array (strings compatible with ProductData and frontend display)
+        t_evidence_start = time.perf_counter()
         raw_evidence_items: List[Any] = []
 
         # Add field-specific evidence for statutory rule verification (omit placeholders)
@@ -1232,7 +1253,9 @@ class PaddleOCRService:
                     "polygon": line.bbox.polygon,
                 },
             })
+        self._last_evidence_time_sec = time.perf_counter() - t_evidence_start
 
+        t_post_parse_start = time.perf_counter()
         # 4. Infer statutory metadata for rule engine
         import_status = ImportStatusEnum.UNCERTAIN
         is_imported = None
@@ -1277,7 +1300,18 @@ class PaddleOCRService:
             package_type="normal",
             raw_evidence=raw_evidence_items,
         )
-        self._last_parse_time_ms = (time.time() - t_parse_start) * 1000.0
+        parse_elapsed_2 = time.perf_counter() - t_post_parse_start
+        self._last_parse_time_sec = parse_elapsed_1 + parse_elapsed_2
+        self._last_parse_time_ms = self._last_parse_time_sec * 1000.0
+
+        self.last_benchmark_timings = {
+            "ocr_initialization_sec": self._last_init_time_sec,
+            "preprocessing_sec": self._last_prep_time_sec,
+            "ocr_inference_sec": self._last_infer_time_sec,
+            "ocr_parsing_sec": self._last_parse_time_sec,
+            "evidence_processing_sec": self._last_evidence_time_sec,
+        }
+
         self.last_timings = {
             "preprocessing_time_ms": round(self._last_prep_time_ms, 2),
             "ocr_inference_time_ms": round(self._last_infer_time_ms, 2),

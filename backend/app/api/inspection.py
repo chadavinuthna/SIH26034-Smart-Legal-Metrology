@@ -1,4 +1,5 @@
 import os
+import time
 import inspect
 import logging
 from datetime import datetime
@@ -34,6 +35,7 @@ async def analyze_package(
     Real uploaded image(s) -> Pillow validation -> PaddleOCR -> Deterministic Parser
     -> SQLite-backed Rule Engine (LM-001..LM-009) -> InspectionResponse.
     """
+    t_req_start = time.perf_counter()
     upload_files: List[UploadFile] = []
     # 1. Primary multi-image collection from "images" field
     if images:
@@ -51,6 +53,7 @@ async def analyze_package(
     allowed_types = {"image/jpeg", "image/png", "image/webp", "image/jpg", "image/bmp"}
     allowed_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
+    t_upload_start = time.perf_counter()
     images_bytes: List[bytes] = []
     for upload_file in upload_files:
         content_type = (upload_file.content_type or "").split(";")[0].strip().lower()
@@ -63,6 +66,7 @@ async def analyze_package(
         file_bytes = await upload_file.read()
         if file_bytes:
             images_bytes.append(file_bytes)
+    upload_read_time_sec = time.perf_counter() - t_upload_start
 
     # Normalize empty string demo_sample to None
     if demo_sample == "":
@@ -81,6 +85,8 @@ async def analyze_package(
             category_hint=category,
             demo_sample=demo_sample,
             db=db,
+            upload_read_time_sec=upload_read_time_sec,
+            request_start_time=t_req_start,
         )
         return inspection
     except HTTPException:

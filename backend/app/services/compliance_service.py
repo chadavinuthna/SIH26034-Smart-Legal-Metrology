@@ -209,6 +209,8 @@ def run_inspection(
     category_hint: Optional[str] = None,
     demo_sample: Optional[str] = None,
     db: Optional[Session] = None,
+    upload_read_time_sec: float = 0.0,
+    request_start_time: Optional[float] = None,
 ) -> InspectionResponse:
     """
     Coordinates Image Extraction -> Database-backed Deterministic Rule Engine
@@ -220,6 +222,7 @@ def run_inspection(
     -> PASS/FAIL/REVIEW/NA -> Timed InspectionResponse -> Frontend
     """
     total_start = time.time()
+    total_start_perf = time.perf_counter()
     try:
         from zoneinfo import ZoneInfo
         kolkata_tz = ZoneInfo("Asia/Kolkata")
@@ -232,6 +235,12 @@ def run_inspection(
     pillow_time_ms = 0.0
     sub_timings: Dict[str, float] = {}
 
+    accum_init_sec = 0.0
+    accum_prep_sec = 0.0
+    accum_infer_sec = 0.0
+    accum_parse_sec = 0.0
+    accum_evidence_sec = 0.0
+
     # Consolidate input images into a normalized list
     input_images_bytes: List[bytes] = []
     if images_bytes:
@@ -242,7 +251,7 @@ def run_inspection(
     # 1. Extraction: Real PaddleOCR for uploaded image(s); demo fallback if demo_sample requested
     if input_images_bytes and not demo_sample:
         # Step 1a: Pillow image validation for all uploaded images
-        t_pillow_start = time.time()
+        t_pillow_start = time.perf_counter()
         validated_pil_images: List[Image.Image] = []
         for idx, img_b in enumerate(input_images_bytes):
             try:
@@ -255,7 +264,9 @@ def run_inspection(
             except Exception as e:
                 logger.error(f"Pillow image validation failed for image #{idx + 1}: {e}")
                 raise ValueError(f"Invalid or corrupted image format in uploaded image #{idx + 1}: {e}")
-        pillow_time_ms = (time.time() - t_pillow_start) * 1000.0
+        pillow_time_sec = time.perf_counter() - t_pillow_start
+        pillow_time_ms = pillow_time_sec * 1000.0
+        accum_prep_sec += pillow_time_sec
 
         # Step 1b: PaddleOCR extraction across all images of the same product
         if paddle_ocr_service.is_available():
@@ -281,6 +292,14 @@ def run_inspection(
                 accum_prep_ms += last_timings.get("preprocessing_time_ms", 0.0)
                 accum_infer_ms += last_timings.get("ocr_inference_time_ms", 0.0)
                 accum_parse_ms += last_timings.get("deterministic_parsing_time_ms", 0.0)
+
+                bench_timings = getattr(paddle_ocr_service, "last_benchmark_timings", {}) or {}
+                accum_init_sec += bench_timings.get("ocr_initialization_sec", 0.0)
+                accum_prep_sec += bench_timings.get("preprocessing_sec", 0.0)
+                accum_infer_sec += bench_timings.get("ocr_inference_sec", 0.0)
+                accum_parse_sec += bench_timings.get("ocr_parsing_sec", 0.0)
+                accum_evidence_sec += bench_timings.get("evidence_processing_sec", 0.0)
+
                 extracted_products.append(prod_data)
                 logger.info(
                     f"[Multi-Image OCR] Panel #{img_num} extracted -> "
@@ -290,7 +309,11 @@ def run_inspection(
                 )
 
             # Combine multiple image product data into one unified ProductData
+            t_merge_start = time.perf_counter()
             product_data = combine_multi_image_product_data(extracted_products)
+            merge_time_sec = time.perf_counter() - t_merge_start
+            accum_parse_sec += merge_time_sec
+
             sub_timings = {
                 "preprocessing_time_ms": round(accum_prep_ms, 2),
                 "ocr_inference_time_ms": round(accum_infer_ms or ocr_time_ms, 2),
@@ -327,6 +350,10 @@ def run_inspection(
     )
     rules_time_ms = (time.time() - t_rules_start) * 1000.0
 
+    rule_timings = getattr(evaluate_product_compliance, "last_timings", {}) or {}
+    db_query_time_sec = rule_timings.get("db_query_time_sec", 0.0)
+    rule_eval_time_sec = rule_timings.get("rule_eval_time_sec", rules_time_ms / 1000.0)
+
     # 3. Generate Inspection ID & Timestamp
     year = inspection_datetime.year
     rand_num = random.randint(10000, 99999)
@@ -351,6 +378,7 @@ def run_inspection(
     }
 
     # 3b. Extract structured OCR detections from product_data.raw_evidence
+    t_ev_extract_start = time.perf_counter()
     extracted_detections = [
         {
             "image_index": item.get("image_index", 1),
@@ -361,6 +389,7 @@ def run_inspection(
         for item in product_data.raw_evidence
         if isinstance(item, dict) and item.get("type") == "ocr_line"
     ]
+    accum_evidence_sec += (time.perf_counter() - t_ev_extract_start)
     ocr_detections = extracted_detections if extracted_detections else None
 
     response = InspectionResponse(
@@ -378,6 +407,41 @@ def run_inspection(
     )
 
     # 4. Save to storage
+    t_save_start = time.perf_counter()
     storage_service.save_inspection(response)
+    storage_save_sec = time.perf_counter() - t_save_start
+
+    # Consolidate benchmark timings
+    total_image_prep_sec = upload_read_time_sec + accum_prep_sec
+    total_db_sec = db_query_time_sec + storage_save_sec
+    total_pipeline_time_sec = (time.perf_counter() - request_start_time) if request_start_time is not None else (time.perf_counter() - total_start_perf)
+
+    run_inspection.last_benchmark_timings = {
+        "image_preparation_sec": total_image_prep_sec,
+        "ocr_initialization_sec": accum_init_sec,
+        "ocr_inference_sec": accum_infer_sec,
+        "ocr_parsing_sec": accum_parse_sec,
+        "evidence_processing_sec": accum_evidence_sec,
+        "rule_engine_sec": rule_eval_time_sec,
+        "database_sec": total_db_sec,
+        "total_sec": total_pipeline_time_sec,
+    }
+
+    # Print benchmark output block
+    print(
+        "\n========== INSPECTION TIMING ==========\n"
+        f"Image preparation: {total_image_prep_sec:.2f} seconds\n"
+        f"PaddleOCR initialization: {accum_init_sec:.2f} seconds\n"
+        f"PaddleOCR inference: {accum_infer_sec:.2f} seconds\n"
+        f"OCR parsing: {accum_parse_sec:.2f} seconds\n"
+        f"Evidence processing: {accum_evidence_sec:.2f} seconds\n"
+        f"Rule engine: {rule_eval_time_sec:.2f} seconds\n"
+        f"Database: {total_db_sec:.2f} seconds\n"
+        "Report generation: not present / not measured\n"
+        "----------------------------------------\n"
+        f"TOTAL: {total_pipeline_time_sec:.2f} seconds\n"
+        "========================================\n",
+        flush=True,
+    )
 
     return response

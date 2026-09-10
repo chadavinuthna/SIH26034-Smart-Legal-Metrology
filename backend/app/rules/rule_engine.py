@@ -1,3 +1,4 @@
+import time
 from app.database.database import SessionLocal
 from typing import List, Optional, Tuple
 
@@ -30,6 +31,7 @@ def evaluate_product_compliance(
     if db is None:
         db = SessionLocal()
 
+    t_db_start = time.perf_counter()
     try:
         rules = (
             db.query(Rule)
@@ -59,7 +61,9 @@ def evaluate_product_compliance(
             .order_by(Rule.rule_id)
             .all()
         )
+    db_query_time_sec = time.perf_counter() - t_db_start
 
+    t_eval_start = time.perf_counter()
     results: List[RuleResult] = []
 
     for rule in rules:
@@ -99,6 +103,12 @@ def evaluate_product_compliance(
         score = int(round(score_val))
     else:
         score = 100
+
+    rule_eval_time_sec = time.perf_counter() - t_eval_start
+    evaluate_product_compliance.last_timings = {
+        "db_query_time_sec": db_query_time_sec,
+        "rule_eval_time_sec": rule_eval_time_sec,
+    }
 
     return results, overall_status, score, summary
 
